@@ -273,12 +273,18 @@ export const injectCSS = () => {
   styleElement.innerHTML = `
       .nostr-zap-dialog {
         width: 424px;
+        min-width: 376px;
+        margin: auto;
+        box-sizing: content-box;
         border: none;
         border-radius: 10px;
         padding: 36px;
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      }
+      .nostr-zap-dialog[open] {
+        display: block;
       }
       .nostr-zap-dialog img {
         border-radius: 50%;
@@ -301,6 +307,7 @@ export const injectCSS = () => {
         max-width: 100px;
         max-height: 52px;
         white-space: nowrap;
+        color: black;
       }
       .nostr-zap-dialog button:hover {
         background-color: #edf2f7;
