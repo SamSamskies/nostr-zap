@@ -12,7 +12,8 @@
   "scripts": {
     "build": "parcel build",
     "dev": "npm run build && parcel example/index.html --open",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "echo TODO"
   },
   "repository": {
     "type": "git",
