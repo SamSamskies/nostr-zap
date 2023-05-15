@@ -143,10 +143,18 @@ const renderAmountDialog = async (npub, relays) => {
     ".dialog-header-container"
   );
 
-  getDialogHeader().then((htmlString) => {
-    dialogHeaderContainer.innerHTML = htmlString;
-    zapButtton.disabled = false;
-  });
+  getDialogHeader()
+    .then((htmlString) => {
+      dialogHeaderContainer.innerHTML = htmlString;
+      zapButtton.disabled = false;
+    })
+    .catch((error) => {
+      amountDialog.close();
+
+      const errorDialog = renderErrorDialog(error, npub);
+
+      errorDialog.showModal();
+    });
 
   const setZapButtonToLoadingState = () => {
     zapButtton.disabled = true;
