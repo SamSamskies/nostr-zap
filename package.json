@@ -1,0 +1,30 @@
+{
+  "name": "nostr-zap",
+  "version": "0.0.0",
+  "description": "Zap any Nostr npub from anywhere.",
+  "source": "src/index.js",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "parcel build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://git@github.com/SamSamskies/nostr-zap.git"
+  },
+  "keywords": [
+    "nostr",
+    "zap",
+    "bitcoin",
+    "lightning"
+  ],
+  "author": "Sam Samskies",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SamSamskies/nostr-zap/issues"
+  },
+  "homepage": "https://github.com/SamSamskies/nostr-zap#readme",
+  "devDependencies": {
+    "parcel": "^2.8.3",
+    "prettier": "2.8.8"
+  }
+}
