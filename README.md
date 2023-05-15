@@ -20,7 +20,7 @@ you can specify relays that you'd like the zap receipt published to using a `dat
 
 Add this script tag right before the bottom closing body tag.
 ```js
-<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.1.5"></script>
+<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.1.6"></script>
 ```
 
 Example Sandbox: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm

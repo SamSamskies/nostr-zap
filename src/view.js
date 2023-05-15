@@ -283,7 +283,8 @@ export const injectCSS = () => {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
       }
-      .nostr-zap-dialog[open] {
+      .nostr-zap-dialog[open],
+      .nostr-zap-dialog form {
         display: block;
       }
       .nostr-zap-dialog img {
