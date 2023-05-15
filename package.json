@@ -4,8 +4,15 @@
   "description": "Zap any Nostr npub from anywhere.",
   "source": "src/index.js",
   "main": "dist/main.js",
+  "targets": {
+    "main": {
+      "includeNodeModules": true
+    }
+  },
   "scripts": {
-    "build": "parcel build"
+    "build": "parcel build",
+    "dev": "npm run build && parcel example/index.html --open",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -26,5 +33,9 @@
   "devDependencies": {
     "parcel": "^2.8.3",
     "prettier": "2.8.8"
+  },
+  "dependencies": {
+    "easyqrcodejs": "^4.4.13",
+    "nostr-tools": "^1.10.1"
   }
 }

@@ -1,1 +1,4 @@
-console.log("hello world");
+import { injectCSS, initTarget } from "./view";
+
+injectCSS();
+initTarget();
