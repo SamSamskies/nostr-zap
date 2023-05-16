@@ -209,15 +209,30 @@ const renderAmountDialog = async (npub, relays) => {
         amount,
         comment,
       });
-      const invoiceDialog = renderInvoiceDialog({
-        dialogHeader: await getDialogHeader(),
-        invoice,
-      });
-      const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
-      amountDialog.close();
-      invoiceDialog.showModal();
-      openWalletButton.focus();
+      const showInvoiceDialog = async () => {
+        const invoiceDialog = renderInvoiceDialog({
+          dialogHeader: await getDialogHeader(),
+          invoice,
+        });
+        const openWalletButton = invoiceDialog.querySelector(".cta-button");
+
+        amountDialog.close();
+        invoiceDialog.showModal();
+        openWalletButton.focus();
+      };
+
+      if (window.webln) {
+        try {
+          await window.webln.enable();
+          await window.webln.sendPayment(invoice);
+          amountDialog.close();
+        } catch (e) {
+          showInvoiceDialog();
+        }
+      } else {
+        showInvoiceDialog();
+      }
     } catch (error) {
       handleError(error);
     }
