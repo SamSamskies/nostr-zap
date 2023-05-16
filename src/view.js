@@ -5,7 +5,6 @@ import {
   fetchInvoice,
   getProfileMetadata,
   getZapEndpoint,
-  makeZapEvent,
 } from "./nostr";
 
 const renderDialog = (htmlStrTemplate) => {
@@ -197,17 +196,12 @@ const renderAmountDialog = async (npub, relays) => {
     const comment = commentInput.value;
 
     try {
-      const zapEvent = await makeZapEvent({
-        profile: authorId,
-        amount,
-        relays: normalizedRelays,
-        comment,
-      });
       const invoice = await fetchInvoice({
-        zapEvent,
         zapEndpoint: await zapEndpoint,
         amount,
         comment,
+        authorId,
+        normalizedRelays,
       });
 
       const showInvoiceDialog = async () => {

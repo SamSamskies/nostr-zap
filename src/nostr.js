@@ -10,10 +10,6 @@ export const getProfileMetadata = async (authorId) => {
   }
 
   const metadata = await new Promise((resolve, reject) => {
-    if (window === undefined || window.nostr === undefined) {
-      return reject("No extension that supports Nostr nip-07 detected.");
-    }
-
     const relay = relayInit("wss://relay.nostr.band");
 
     relay.on("connect", async () => {
@@ -57,7 +53,7 @@ export const getZapEndpoint = async (profileMetadata) => {
   return zapEndpoint;
 };
 
-export const makeZapEvent = async ({ profile, amount, relays, comment }) => {
+const makeZapEvent = async ({ profile, amount, relays, comment }) => {
   const zapEvent = nip57.makeZapRequest({
     profile,
     amount,
@@ -77,14 +73,24 @@ export const makeZapEvent = async ({ profile, amount, relays, comment }) => {
 };
 
 export const fetchInvoice = async ({
-  zapEvent,
   zapEndpoint,
   amount,
   comment,
+  authorId,
+  normalizedRelays,
 }) => {
-  let url = `${zapEndpoint}?amount=${amount}&nostr=${encodeURIComponent(
-    JSON.stringify(zapEvent)
-  )}`;
+  let url = `${zapEndpoint}?amount=${amount}`;
+
+  if (isNipO7ExtAvailable()) {
+    const zapEvent = await makeZapEvent({
+      profile: authorId,
+      amount,
+      relays: normalizedRelays,
+      comment,
+    });
+
+    url = `${url}&nostr=${encodeURIComponent(JSON.stringify(zapEvent))}`;
+  }
 
   if (comment) {
     url = `${url}&comment=${encodeURIComponent(comment)}`;
@@ -94,4 +100,8 @@ export const fetchInvoice = async ({
   const { pr: invoice } = await res.json();
 
   return invoice;
+};
+
+export const isNipO7ExtAvailable = () => {
+  return window !== undefined && window.nostr !== undefined;
 };
