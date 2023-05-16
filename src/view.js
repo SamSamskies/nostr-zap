@@ -142,19 +142,20 @@ const renderAmountDialog = async (npub, relays) => {
   const dialogHeaderContainer = amountDialog.querySelector(
     ".dialog-header-container"
   );
+  const handleError = (error) => {
+    amountDialog.close();
+
+    const errorDialog = renderErrorDialog(error, npub);
+
+    errorDialog.showModal();
+  };
 
   getDialogHeader()
     .then((htmlString) => {
       dialogHeaderContainer.innerHTML = htmlString;
       zapButtton.disabled = false;
     })
-    .catch((error) => {
-      amountDialog.close();
-
-      const errorDialog = renderErrorDialog(error, npub);
-
-      errorDialog.showModal();
-    });
+    .catch(handleError);
 
   const setZapButtonToLoadingState = () => {
     zapButtton.disabled = true;
@@ -194,27 +195,32 @@ const renderAmountDialog = async (npub, relays) => {
 
     const amount = Number(amountInput.value) * 1000;
     const comment = commentInput.value;
-    const zapEvent = await makeZapEvent({
-      profile: authorId,
-      amount,
-      relays: normalizedRelays,
-      comment,
-    });
-    const invoice = await fetchInvoice({
-      zapEvent,
-      zapEndpoint: await zapEndpoint,
-      amount,
-      comment,
-    });
-    const invoiceDialog = renderInvoiceDialog({
-      dialogHeader: await getDialogHeader(),
-      invoice,
-    });
-    const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
-    amountDialog.close();
-    invoiceDialog.showModal();
-    openWalletButton.focus();
+    try {
+      const zapEvent = await makeZapEvent({
+        profile: authorId,
+        amount,
+        relays: normalizedRelays,
+        comment,
+      });
+      const invoice = await fetchInvoice({
+        zapEvent,
+        zapEndpoint: await zapEndpoint,
+        amount,
+        comment,
+      });
+      const invoiceDialog = renderInvoiceDialog({
+        dialogHeader: await getDialogHeader(),
+        invoice,
+      });
+      const openWalletButton = invoiceDialog.querySelector(".cta-button");
+
+      amountDialog.close();
+      invoiceDialog.showModal();
+      openWalletButton.focus();
+    } catch (error) {
+      handleError(error);
+    }
   });
 
   return amountDialog;
