@@ -206,15 +206,29 @@ const renderAmountDialog = async (npub, relays) => {
       amount,
       comment,
     });
-    const invoiceDialog = renderInvoiceDialog({
-      dialogHeader: await getDialogHeader(),
-      invoice,
-    });
-    const openWalletButton = invoiceDialog.querySelector(".cta-button");
+    
+    // function to show the invoice QR code if webln is not available or the user cancels webln
+    const showInvoiceInDialog = () => {
+      const invoiceDialog = renderInvoiceDialog({
+        dialogHeader: await getDialogHeader(),
+        invoice,
+      });
+      const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
-    amountDialog.close();
-    invoiceDialog.showModal();
-    openWalletButton.focus();
+      amountDialog.close();
+      invoiceDialog.showModal();
+      openWalletButton.focus();
+    };
+    
+    if (window.webln) { 
+      try { 
+        await window.webln.enable();
+        const response = await window.webln.sendPayment(invoice);
+      } catch(e) {
+        showInvoiceInDialog();
+    } else {
+      showInvoiceInDialog();
+    }
   });
 
   return amountDialog;
