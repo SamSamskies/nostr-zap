@@ -1,4 +1,10 @@
-import { nip19, nip57, relayInit } from "nostr-tools";
+import {
+  nip19,
+  nip57,
+  relayInit,
+  generatePrivateKey,
+  finishEvent,
+} from "nostr-tools";
 
 export const decodeNpub = (npub) => nip19.decode(npub).data;
 
@@ -53,6 +59,18 @@ export const getZapEndpoint = async (profileMetadata) => {
   return zapEndpoint;
 };
 
+const signEvent = async (zapEvent) => {
+  if (isNipO7ExtAvailable()) {
+    try {
+      return await window.nostr.signEvent(zapEvent);
+    } catch (e) {
+      // fail silently and sign event as an anonymous user
+    }
+  }
+
+  return finishEvent(zapEvent, generatePrivateKey());
+};
+
 const makeZapEvent = async ({ profile, amount, relays, comment }) => {
   const zapEvent = nip57.makeZapRequest({
     profile,
@@ -60,16 +78,8 @@ const makeZapEvent = async ({ profile, amount, relays, comment }) => {
     relays,
     comment,
   });
-  const signedEvent = await window.nostr.signEvent(zapEvent);
-  const validateZapRequestResult = nip57.validateZapRequest(
-    JSON.stringify(signedEvent)
-  );
 
-  if (validateZapRequestResult !== null) {
-    throw new Error(validateZapRequestResult);
-  }
-
-  return signedEvent;
+  return signEvent(zapEvent);
 };
 
 export const fetchInvoice = async ({
@@ -79,18 +89,15 @@ export const fetchInvoice = async ({
   authorId,
   normalizedRelays,
 }) => {
-  let url = `${zapEndpoint}?amount=${amount}`;
-
-  if (isNipO7ExtAvailable()) {
-    const zapEvent = await makeZapEvent({
-      profile: authorId,
-      amount,
-      relays: normalizedRelays,
-      comment,
-    });
-
-    url = `${url}&nostr=${encodeURIComponent(JSON.stringify(zapEvent))}`;
-  }
+  const zapEvent = await makeZapEvent({
+    profile: authorId,
+    amount,
+    relays: normalizedRelays,
+    comment,
+  });
+  let url = `${zapEndpoint}?amount=${amount}&nostr=${encodeURIComponent(
+    JSON.stringify(zapEvent)
+  )}`;
 
   if (comment) {
     url = `${url}&comment=${encodeURIComponent(comment)}`;

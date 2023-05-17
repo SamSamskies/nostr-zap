@@ -9,8 +9,7 @@ Add a `nostr-zap-target` id to an element on your site and specify a target npub
 you can specify relays that you'd like the zap receipt published to using a `data-relays` attribute. If you don't add a
 `data-relays` attribute, the zap receipt will be blasted out to the top 300 relays using Blastr (wss://nostr.mutinywallet.com).
 
-If the user doesn't have an ext that supports nip-07 installed, they'll still be allowed to send a lightning tip, but no
-zap receipt will be published to the relays.
+If the user doesn't have an ext that supports nip-07 installed or does not authorize signing the zap event, an anonymous zap will be sent.
 ```html
 <button 
     id="nostr-zap-target"
@@ -23,7 +22,7 @@ zap receipt will be published to the relays.
 
 Add this script tag right before the bottom closing body tag.
 ```js
-<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.3.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.4.0"></script>
 ```
 
 Example Sandbox: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm
