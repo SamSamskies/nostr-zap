@@ -257,29 +257,30 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
-export const initTarget = () => {
-  const targetEl = document.getElementById("nostr-zap-target");
-  const npub = targetEl.getAttribute("data-npub");
-  const relays = targetEl.getAttribute("data-relays");
-  let amountDialog = null;
+export const initTargets = () => {
+  document.querySelectorAll("[data-npub]").forEach((targetEl) => {
+    const npub = targetEl.getAttribute("data-npub");
+    const relays = targetEl.getAttribute("data-relays");
+    let amountDialog = null;
 
-  targetEl.addEventListener("click", async function () {
-    try {
-      if (!amountDialog) {
-        amountDialog = await renderAmountDialog(npub, relays);
+    targetEl.addEventListener("click", async function () {
+      try {
+        if (!amountDialog) {
+          amountDialog = await renderAmountDialog(npub, relays);
+        }
+
+        amountDialog.showModal();
+        amountDialog.querySelector('input[name="amount"]').focus();
+      } catch (error) {
+        if (amountDialog) {
+          amountDialog.close();
+        }
+
+        const errorDialog = renderErrorDialog(error, npub);
+
+        errorDialog.showModal();
       }
-
-      amountDialog.showModal();
-      amountDialog.querySelector('input[name="amount"]').focus();
-    } catch (error) {
-      if (amountDialog) {
-        amountDialog.close();
-      }
-
-      const errorDialog = renderErrorDialog(error, npub);
-
-      errorDialog.showModal();
-    }
+    });
   });
 };
 export const injectCSS = () => {

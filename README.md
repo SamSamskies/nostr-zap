@@ -5,14 +5,13 @@ Zap any Nostr npub from anywhere.
 
 ## Usage
 
-Add a `nostr-zap-target` id to an element on your site and specify a target npub using a `data-npub` attribute. Optionally,
+Specify a target npub using a `data-npub` attribute on any HTML elements that you would like to turn into click targets. Optionally,
 you can specify relays that you'd like the zap receipt published to using a `data-relays` attribute. If you don't add a
 `data-relays` attribute, the zap receipt will be blasted out to the top 300 relays using Blastr (wss://nostr.mutinywallet.com).
 
 If the user doesn't have an ext that supports nip-07 installed or does not authorize signing the zap event, an anonymous zap will be sent.
 ```html
-<button 
-    id="nostr-zap-target"
+<button
     data-npub="npub1vp8fdcyejd4pqjyrjk9sgz68vuhq7pyvnzk8j0ehlljvwgp8n6eqsrnpsw"
     data-relays="wss://relay.damus.io,wss://relay.snort.social,wss://nostr.wine,wss://relay.nostr.band"
 >
@@ -22,9 +21,11 @@ If the user doesn't have an ext that supports nip-07 installed or does not autho
 
 Add this script tag right before the bottom closing body tag.
 ```js
-<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.4.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.5.0"></script>
 ```
 
-Example Sandbox: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm
+Example Sandbox with 1 button: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm
+
+Example Sandbox with multiple buttons: https://codesandbox.io/s/nostr-zap-from-anywhere-multiple-buttons-6qp79r
 
 ![nostr-zap demo](https://nostr.build/p/nb8670.gif)

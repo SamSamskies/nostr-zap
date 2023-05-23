@@ -8,11 +8,11 @@ import {
 
 export const decodeNpub = (npub) => nip19.decode(npub).data;
 
-let cachedProfileMetadata = null;
+let cachedProfileMetadata = {};
 
 export const getProfileMetadata = async (authorId) => {
-  if (cachedProfileMetadata) {
-    return cachedProfileMetadata;
+  if (cachedProfileMetadata[authorId]) {
+    return cachedProfileMetadata[authorId];
   }
 
   const metadata = await new Promise((resolve, reject) => {
@@ -26,7 +26,7 @@ export const getProfileMetadata = async (authorId) => {
         kinds: [0],
       });
 
-      cachedProfileMetadata = metadata;
+      cachedProfileMetadata[authorId] = metadata;
       resolve(metadata);
       relay.close();
     });

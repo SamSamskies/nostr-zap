@@ -1,4 +1,4 @@
-import { injectCSS, initTarget } from "./view";
+import { injectCSS, initTargets } from "./view";
 
 injectCSS();
-initTarget();
+initTargets();
