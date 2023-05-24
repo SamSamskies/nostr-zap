@@ -270,7 +270,10 @@ export const initTargets = () => {
         }
 
         amountDialog.showModal();
-        amountDialog.querySelector('input[name="amount"]').focus();
+
+        if (!window.matchMedia("(max-height: 932px)").matches) {
+          amountDialog.querySelector('input[name="amount"]').focus();
+        }
       } catch (error) {
         if (amountDialog) {
           amountDialog.close();
