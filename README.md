@@ -21,7 +21,7 @@ If the user doesn't have an ext that supports nip-07 installed or does not autho
 
 Add this script tag right before the bottom closing body tag.
 ```js
-<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.5.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/nostr-zap@0.6.0"></script>
 ```
 
 Example Sandbox with 1 button: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm

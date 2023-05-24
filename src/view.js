@@ -304,7 +304,16 @@ export const injectCSS = () => {
         display: block;
       }
       .nostr-zap-dialog img {
+        display: inline;
         border-radius: 50%;
+      }
+      .nostr-zap-dialog h2 {
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+      .nostr-zap-dialog p {
+        font-size: 1em;
+        font-weight: normal;
       }
       .nostr-zap-dialog h2,
       .nostr-zap-dialog p,
