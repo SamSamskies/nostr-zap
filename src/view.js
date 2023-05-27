@@ -5,6 +5,7 @@ import {
   fetchInvoice,
   getProfileMetadata,
   getZapEndpoint,
+  listenForZapReceipt,
 } from "./nostr";
 
 const renderDialog = (htmlStrTemplate) => {
@@ -36,7 +37,7 @@ const renderDialog = (htmlStrTemplate) => {
   return dialog;
 };
 
-const renderInvoiceDialog = ({ dialogHeader, invoice }) => {
+const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
   const invoiceDialog = renderDialog(`
         <button class="close-button">X</button>
         ${dialogHeader}
@@ -50,6 +51,13 @@ const renderInvoiceDialog = ({ dialogHeader, invoice }) => {
       `);
   const qrCodeEl = invoiceDialog.querySelector(".qrcode");
   const overlayEl = qrCodeEl.querySelector(".overlay");
+  const closePool = listenForZapReceipt({
+    relays,
+    invoice,
+    onSuccess: () => {
+      invoiceDialog.close();
+    },
+  });
 
   new QRCode(qrCodeEl, { text: invoice });
 
@@ -60,6 +68,7 @@ const renderInvoiceDialog = ({ dialogHeader, invoice }) => {
   });
 
   invoiceDialog.addEventListener("close", function () {
+    closePool();
     invoiceDialog.remove();
   });
 
@@ -208,6 +217,7 @@ const renderAmountDialog = async (npub, relays) => {
         const invoiceDialog = renderInvoiceDialog({
           dialogHeader: await getDialogHeader(),
           invoice,
+          relays: normalizedRelays,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
