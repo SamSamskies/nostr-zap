@@ -10,13 +10,55 @@
     <title>Document</title>
   </head>
   <body>
+    <h1>Zap Npub Examples</h1>
     <button
       data-npub="npub17jql6yle662jshcw748h9xpkmvz8p70jqnt05up9emv9r4jxtlms3zm9ns"
       data-relays="wss://relay.damus.io,wss://relay.snort.social,wss://nostr.wine,wss://relay.nostr.band"
     >
       Zap Frenstr ⚡️
     </button>
-    <button data-npub="npub1f948ng6s3spk9wv990tuyh4dl0uujt6jq9uduanzt3yy653e6f6s77uvzg">Zap Fortune Cookie ⚡️</button>
+    <button
+      data-npub="npub1f948ng6s3spk9wv990tuyh4dl0uujt6jq9uduanzt3yy653e6f6s77uvzg"
+    >
+      Zap Fortune Cookie ⚡️
+    </button>
+    <div>
+      <h1>Zap Note Example</h1>
+      <div
+        id="nostr-embed-note108e6uqt6tg33626gkx0mv89h80jgpd46xpfzly02s34xlte4vl0sz83kw3"
+        style="margin-bottom: 16px;"
+      ></div>
+      <script>
+        !(function () {
+          const n = document.createElement("script");
+          n.type = "text/javascript";
+          n.async = !0;
+          n.src =
+            "https://cdn.jsdelivr.net/gh/nostrband/nostr-embed@0.1.12/dist/nostr-embed.js";
+          const options = {
+            showZaps: true,
+            showCopyAddr: false,
+            hideNostrich: false,
+          };
+          n.onload = function () {
+            nostrEmbed.init(
+              "note108e6uqt6tg33626gkx0mv89h80jgpd46xpfzly02s34xlte4vl0sz83kw3",
+              "#nostr-embed-note108e6uqt6tg33626gkx0mv89h80jgpd46xpfzly02s34xlte4vl0sz83kw3",
+              "",
+              options
+            );
+          };
+          const a = document.getElementsByTagName("script")[0];
+          a.parentNode.insertBefore(n, a);
+        })();
+      </script>
+      <button
+        data-npub="npub1vp8fdcyejd4pqjyrjk9sgz68vuhq7pyvnzk8j0ehlljvwgp8n6eqsrnpsw"
+        data-note-id="note108e6uqt6tg33626gkx0mv89h80jgpd46xpfzly02s34xlte4vl0sz83kw3"
+      >
+        Zap This Note ⚡️
+      </button>
+    </div>
     <script src="../dist/main.js"></script>
   </body>
 </html>

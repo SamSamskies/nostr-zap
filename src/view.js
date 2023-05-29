@@ -81,10 +81,9 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
   return invoiceDialog;
 };
 
-const renderAmountDialog = async (npub, relays) => {
-  const truncatedNpub = `${npub.substring(0, 12)}...${npub.substring(
-    npub.length - 12
-  )}`;
+const renderAmountDialog = async ({ npub, noteId, relays }) => {
+  const truncateNip19Entity = (hex) =>
+    `${hex.substring(0, 12)}...${hex.substring(npub.length - 12)}`;
   const normalizedRelays = relays
     ? relays.split(",")
     : ["wss://nostr.mutinywallet.com"];
@@ -108,7 +107,7 @@ const renderAmountDialog = async (npub, relays) => {
           height="80"
           alt="nostr user avatar"
         />
-      <p>${truncatedNpub}</p>
+      <p>${noteId ? truncateNip19Entity(noteId) : truncateNip19Entity(npub)}</p>
     `;
   };
   const amountDialog = renderDialog(`
@@ -210,6 +209,7 @@ const renderAmountDialog = async (npub, relays) => {
         amount,
         comment,
         authorId,
+        noteId,
         normalizedRelays,
       });
 
@@ -270,13 +270,14 @@ const renderErrorDialog = (message, npub) => {
 export const initTargets = () => {
   document.querySelectorAll("[data-npub]").forEach((targetEl) => {
     const npub = targetEl.getAttribute("data-npub");
+    const noteId = targetEl.getAttribute("data-note-id");
     const relays = targetEl.getAttribute("data-relays");
     let amountDialog = null;
 
     targetEl.addEventListener("click", async function () {
       try {
         if (!amountDialog) {
-          amountDialog = await renderAmountDialog(npub, relays);
+          amountDialog = await renderAmountDialog({ npub, noteId, relays });
         }
 
         amountDialog.showModal();

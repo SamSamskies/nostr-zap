@@ -9,6 +9,8 @@ import {
 
 export const decodeNpub = (npub) => nip19.decode(npub).data;
 
+const decodeNoteId = (noteId) => nip19.decode(noteId).data;
+
 let cachedProfileMetadata = {};
 
 export const getProfileMetadata = async (authorId) => {
@@ -72,9 +74,10 @@ const signEvent = async (zapEvent) => {
   return finishEvent(zapEvent, generatePrivateKey());
 };
 
-const makeZapEvent = async ({ profile, amount, relays, comment }) => {
+const makeZapEvent = async ({ profile, event, amount, relays, comment }) => {
   const zapEvent = nip57.makeZapRequest({
     profile,
+    event,
     amount,
     relays,
     comment,
@@ -88,10 +91,12 @@ export const fetchInvoice = async ({
   amount,
   comment,
   authorId,
+  noteId,
   normalizedRelays,
 }) => {
   const zapEvent = await makeZapEvent({
     profile: authorId,
+    event: noteId ? decodeNoteId(noteId) : undefined,
     amount,
     relays: normalizedRelays,
     comment,
