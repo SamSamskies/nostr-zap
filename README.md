@@ -1,7 +1,7 @@
 # nostr-zap
 [![NPM](https://img.shields.io/npm/v/nostr-zap.svg)](https://www.npmjs.com/package/nostr-zap)
 
-Zap any Nostr npub from anywhere.
+Zap any Nostr npub or note from anywhere.
 
 ## Usage
 
