@@ -324,10 +324,12 @@ export const injectCSS = () => {
       .nostr-zap-dialog h2 {
         font-size: 1.5em;
         font-weight: bold;
+        color: black;
       }
       .nostr-zap-dialog p {
         font-size: 1em;
         font-weight: normal;
+        color: black;
       }
       .nostr-zap-dialog h2,
       .nostr-zap-dialog p,
