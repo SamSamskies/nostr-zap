@@ -350,6 +350,7 @@ export const injectCSS = () => {
         max-height: 52px;
         white-space: nowrap;
         color: black;
+        box-sizing: border-box;
       }
       .nostr-zap-dialog button:hover {
         background-color: #edf2f7;
