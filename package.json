@@ -1,6 +1,6 @@
 {
   "name": "nostr-zap",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Zap any Nostr npub from anywhere.",
   "source": "src/index.js",
   "main": "dist/main.js",
