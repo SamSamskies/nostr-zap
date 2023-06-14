@@ -318,6 +318,9 @@ export const injectCSS = () => {
         display: block;
         max-width: fit-content;
       }
+      .nostr-zap-dialog form {
+        padding: 0;
+      }
       .nostr-zap-dialog img {
         display: inline;
         border-radius: 50%;
@@ -395,6 +398,7 @@ export const injectCSS = () => {
         border: none;
         font-size: 16px;
         width: 100%;
+        max-width: 100%;
         background-color: #f7fafc;
         color: #1a202c;
         box-shadow: none;
