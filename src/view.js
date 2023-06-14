@@ -320,6 +320,7 @@ export const injectCSS = () => {
       }
       .nostr-zap-dialog form {
         padding: 0;
+        width: 100%;
       }
       .nostr-zap-dialog img {
         display: inline;
