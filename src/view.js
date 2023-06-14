@@ -316,6 +316,7 @@ export const injectCSS = () => {
       .nostr-zap-dialog[open],
       .nostr-zap-dialog form {
         display: block;
+        max-width: fit-content;
       }
       .nostr-zap-dialog img {
         display: inline;
