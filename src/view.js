@@ -497,11 +497,11 @@ export const injectCSS = () => {
       }
       @media only screen and (max-width: 413px) {
         .nostr-zap-dialog {
-          min-width: 339px;
+          min-width: 324px;
         }
         .nostr-zap-dialog button {
-          width: 80px;
-          max-width: 80px;
+          width: 78px;
+          max-width: 78px;
         }
       }
   `;
