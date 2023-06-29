@@ -344,7 +344,7 @@ export const injectCSS = () => {
       }
       .nostr-zap-dialog button {
         background-color: inherit;
-        padding: 12px 20px;
+        padding: 12px 0;
         border-radius: 5px;
         border: none;
         font-size: 16px;
@@ -493,6 +493,15 @@ export const injectCSS = () => {
         .nostr-zap-dialog button {
           width: 92px;
           max-width: 92px;
+        }
+      }
+      @media only screen and (max-width: 413px) {
+        .nostr-zap-dialog {
+          min-width: 339px;
+        }
+        .nostr-zap-dialog button {
+          width: 80px;
+          max-width: 80px;
         }
       }
   `;
