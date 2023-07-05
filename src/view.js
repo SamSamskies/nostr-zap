@@ -267,36 +267,39 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
-export const initTargets = () => {
-  document.querySelectorAll("[data-npub]").forEach((targetEl) => {
-    const npub = targetEl.getAttribute("data-npub");
-    const noteId = targetEl.getAttribute("data-note-id");
-    const relays = targetEl.getAttribute("data-relays");
-    let amountDialog = null;
+export const initTarget = (targetEl) => {
+  const npub = targetEl.getAttribute("data-npub");
+  const noteId = targetEl.getAttribute("data-note-id");
+  const relays = targetEl.getAttribute("data-relays");
+  let amountDialog = null;
 
-    targetEl.addEventListener("click", async function () {
-      try {
-        if (!amountDialog) {
-          amountDialog = await renderAmountDialog({ npub, noteId, relays });
-        }
-
-        amountDialog.showModal();
-
-        if (!window.matchMedia("(max-height: 932px)").matches) {
-          amountDialog.querySelector('input[name="amount"]').focus();
-        }
-      } catch (error) {
-        if (amountDialog) {
-          amountDialog.close();
-        }
-
-        const errorDialog = renderErrorDialog(error, npub);
-
-        errorDialog.showModal();
+  targetEl.addEventListener("click", async function () {
+    try {
+      if (!amountDialog) {
+        amountDialog = await renderAmountDialog({ npub, noteId, relays });
       }
-    });
+
+      amountDialog.showModal();
+
+      if (!window.matchMedia("(max-height: 932px)").matches) {
+        amountDialog.querySelector('input[name="amount"]').focus();
+      }
+    } catch (error) {
+      if (amountDialog) {
+        amountDialog.close();
+      }
+
+      const errorDialog = renderErrorDialog(error, npub);
+
+      errorDialog.showModal();
+    }
   });
 };
+
+export const initTargets = (selector) => {
+  document.querySelectorAll(selector || "[data-npub]").forEach(initTarget);
+};
+
 export const injectCSS = () => {
   const styleElement = document.createElement("style");
 
