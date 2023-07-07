@@ -1,7 +1,6 @@
 import {
   nip19,
   nip57,
-  relayInit,
   generatePrivateKey,
   finishEvent,
   SimplePool,
@@ -18,35 +17,24 @@ export const getProfileMetadata = async (authorId) => {
     return cachedProfileMetadata[authorId];
   }
 
-  const metadata = await new Promise((resolve, reject) => {
-    const relay = relayInit("wss://relay.nostr.band");
+  const pool = new SimplePool();
+  const relays = [
+    "wss://relay.nostr.band",
+    "wss://purplepag.es",
+    "wss://relay.damus.io",
+    "wss://nostr.wine",
+  ];
 
-    relay.on("connect", async () => {
-      console.log(`connected to ${relay.url}`);
-
-      const metadata = await relay.get({
-        authors: [authorId],
-        kinds: [0],
-      });
-
-      cachedProfileMetadata[authorId] = metadata;
-      resolve(metadata);
-      relay.close();
+  try {
+    return await pool.get(relays, {
+      authors: [authorId],
+      kinds: [0],
     });
-
-    relay.on("error", () => {
-      reject(`failed to connect to ${relay.url}`);
-      relay.close();
-    });
-
-    relay.connect();
-  });
-
-  if (!metadata) {
+  } catch (error) {
     throw new Error("failed to fetch user profile :(");
+  } finally {
+    pool.close(relays);
   }
-
-  return metadata;
 };
 
 export const extractProfileMetadataContent = (profileMetadata) =>
