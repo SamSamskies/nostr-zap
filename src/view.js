@@ -268,12 +268,13 @@ const renderErrorDialog = (message, npub) => {
 };
 
 export const initTarget = (targetEl) => {
-  const npub = targetEl.getAttribute("data-npub");
-  const noteId = targetEl.getAttribute("data-note-id");
-  const relays = targetEl.getAttribute("data-relays");
   let amountDialog = null;
 
   targetEl.addEventListener("click", async function () {
+    const npub = targetEl.getAttribute("data-npub");
+    const noteId = targetEl.getAttribute("data-note-id");
+    const relays = targetEl.getAttribute("data-relays");
+
     try {
       if (!amountDialog) {
         amountDialog = await renderAmountDialog({ npub, noteId, relays });
