@@ -45,11 +45,28 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
           <div class="overlay">copied invoice to clipboard</div>
         </div>
         <p>click QR code to copy invoice</p>
-        <a href="lightning:${invoice}">
-          <button class="cta-button">Open Wallet</button>
-        </a>
+        <select name="lightning-wallet">
+          <option value="lightning:">Default Wallet</option>
+          <option value="strike:lightning:">Strike</option>
+          <option value="https://cash.app/launch/lightning/">Cash App</option>
+          <option value="muun:">Muun</option>
+          <option value="bluewallet:lightning:">Blue Wallet</option>
+          <option value="walletofsatoshi:lightning:">Wallet of Satoshi</option>
+          <option value="zebedee:lightning:">Zebedee</option>
+          <option value="zeusln:lightning:">Zeus LN</option>
+          <option value="phoenix://">Phoenix</option>
+          <option value="breez:">Breez</option>
+          <option value="bitcoinbeach://">Bitcoin Beach</option>
+          <option value="blixtwallet:lightning:">Blixt Wallet</option>
+          <option value="river://">River</option>
+        </select>
+        <button class="cta-button">Open Wallet</button>
       `);
   const qrCodeEl = invoiceDialog.querySelector(".qrcode");
+  const lightningWalletEl = invoiceDialog.querySelector(
+    'select[name="lightning-wallet"]'
+  );
+  const ctaButtonEl = invoiceDialog.querySelector(".cta-button");
   const overlayEl = qrCodeEl.querySelector(".overlay");
   const closePool = listenForZapReceipt({
     relays,
@@ -65,6 +82,10 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
     navigator.clipboard.writeText(invoice);
     overlayEl.classList.add("show");
     setTimeout(() => overlayEl.classList.remove("show"), 2000);
+  });
+
+  ctaButtonEl.addEventListener("click", function () {
+    window.location.href = `${lightningWalletEl.value}${invoice}`;
   });
 
   invoiceDialog.addEventListener("close", function () {
@@ -488,6 +509,27 @@ export const injectCSS = () => {
       .nostr-zap-dialog h2.skeleton-placeholder {
         height: 28px;
         width: 300px;
+      }
+      .nostr-zap-dialog select[name="lightning-wallet"] {
+        appearance: none;
+        background-color: white;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%232D3748" width="24" height="24" viewBox="0 0 24 24"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" /></svg>');
+        background-repeat: no-repeat;
+        background-position: right 0.7rem center;
+        background-size: 16px;
+        border: 1px solid #CBD5E0;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border-radius: 0.25rem;
+        width: 100%;
+        margin-top: 24px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+      }
+      .nostr-zap-dialog select[name="lightning-wallet"]:focus {
+        outline: none;
+        border-color: #4FD1C5;
+        box-shadow: 0 0 0 2px #4FD1C5;
       }
       @media only screen and (max-width: 480px) {
         .nostr-zap-dialog {
