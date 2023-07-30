@@ -7,6 +7,7 @@ import {
   getZapEndpoint,
   listenForZapReceipt,
 } from "./nostr";
+import { getCachedLightningUri, cacheLightningUri } from "./cache";
 
 const renderDialog = (htmlStrTemplate) => {
   const dialog = document.createElement("dialog");
@@ -38,6 +39,22 @@ const renderDialog = (htmlStrTemplate) => {
 };
 
 const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
+  const cachedLightningUri = getCachedLightningUri();
+  const options = [
+    { label: "Default Wallet", value: "lightning:" },
+    { label: "Strike", value: "strike:lightning:" },
+    { label: "Cash App", value: "https://cash.app/launch/lightning/" },
+    { label: "Muun", value: "muun:" },
+    { label: "Blue Wallet", value: "bluewallet:lightning:" },
+    { label: "Wallet of Satoshi", value: "walletofsatoshi:lightning:" },
+    { label: "Zebedee", value: "zebedee:lightning:" },
+    { label: "Zeus LN", value: "zeusln:lightning:" },
+    { label: "Phoenix", value: "phoenix://" },
+    { label: "Breez", value: "breez:" },
+    { label: "Bitcoin Beach", value: "bitcoinbeach://" },
+    { label: "Blixt", value: "blixtwallet:lightning:" },
+    { label: "River", value: "river://" },
+  ];
   const invoiceDialog = renderDialog(`
         <button class="close-button">X</button>
         ${dialogHeader}
@@ -46,19 +63,14 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
         </div>
         <p>click QR code to copy invoice</p>
         <select name="lightning-wallet">
-          <option value="lightning:">Default Wallet</option>
-          <option value="strike:lightning:">Strike</option>
-          <option value="https://cash.app/launch/lightning/">Cash App</option>
-          <option value="muun:">Muun</option>
-          <option value="bluewallet:lightning:">Blue Wallet</option>
-          <option value="walletofsatoshi:lightning:">Wallet of Satoshi</option>
-          <option value="zebedee:lightning:">Zebedee</option>
-          <option value="zeusln:lightning:">Zeus LN</option>
-          <option value="phoenix://">Phoenix</option>
-          <option value="breez:">Breez</option>
-          <option value="bitcoinbeach://">Bitcoin Beach</option>
-          <option value="blixtwallet:lightning:">Blixt Wallet</option>
-          <option value="river://">River</option>
+          ${options
+            .map(
+              ({ label, value }) =>
+                `<option value="${value}" ${
+                  cachedLightningUri === value ? "selected" : ""
+                }>${label}</option>`
+            )
+            .join("")}
         </select>
         <button class="cta-button">Open Wallet</button>
       `);
@@ -85,6 +97,7 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
   });
 
   ctaButtonEl.addEventListener("click", function () {
+    cacheLightningUri(lightningWalletEl.value);
     window.location.href = `${lightningWalletEl.value}${invoice}`;
   });
 
