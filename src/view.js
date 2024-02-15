@@ -301,6 +301,27 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
+export const init = async ({ npub, noteId, relays }) => {
+  let amountDialog
+  try {
+    if (!amountDialog) {
+      amountDialog = await renderAmountDialog({ npub, noteId, relays });
+    }
+    amountDialog.showModal();
+
+    if (!window.matchMedia("(max-height: 932px)").matches) {
+      amountDialog.querySelector('input[name="amount"]').focus();
+    }
+  } catch (error) {
+    if (amountDialog) {
+      amountDialog.close();
+    }
+    const errorDialog = renderErrorDialog(error, npub);
+    errorDialog.showModal();
+  }
+};
+
+
 export const initTarget = (targetEl) => {
   let amountDialog = null;
 

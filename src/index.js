@@ -1,6 +1,6 @@
-import { injectCSS, initTargets, initTarget } from "./view";
+import { injectCSS, init, initTargets, initTarget } from "./view";
 
 injectCSS();
 initTargets();
 
-window.nostrZap = {initTarget, initTargets};
+window.nostrZap = {init, initTarget, initTargets};
