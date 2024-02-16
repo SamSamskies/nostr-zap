@@ -325,32 +325,14 @@ export const init = async ({ npub, noteId, relays, cachedAmountDialog }) => {
 
 
 export const initTarget = (targetEl) => {
-  let amountDialog = null;
+  let cachedAmountDialog = null;
 
   targetEl.addEventListener("click", async function () {
     const npub = targetEl.getAttribute("data-npub");
     const noteId = targetEl.getAttribute("data-note-id");
     const relays = targetEl.getAttribute("data-relays");
 
-    try {
-      if (!amountDialog) {
-        amountDialog = await renderAmountDialog({ npub, noteId, relays });
-      }
-
-      amountDialog.showModal();
-
-      if (!window.matchMedia("(max-height: 932px)").matches) {
-        amountDialog.querySelector('input[name="amount"]').focus();
-      }
-    } catch (error) {
-      if (amountDialog) {
-        amountDialog.close();
-      }
-
-      const errorDialog = renderErrorDialog(error, npub);
-
-      errorDialog.showModal();
-    }
+    cachedAmountDialog = await init({ npub, noteId, relays, cachedAmountDialog });
   });
 };
 
