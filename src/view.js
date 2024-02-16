@@ -301,8 +301,8 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
-export const init = async ({ npub, noteId, relays }) => {
-  let amountDialog
+export const init = async ({ npub, noteId, relays, cachedAmountDialog }) => {
+  let amountDialog = cachedAmountDialog;
   try {
     if (!amountDialog) {
       amountDialog = await renderAmountDialog({ npub, noteId, relays });
@@ -312,6 +312,8 @@ export const init = async ({ npub, noteId, relays }) => {
     if (!window.matchMedia("(max-height: 932px)").matches) {
       amountDialog.querySelector('input[name="amount"]').focus();
     }
+
+    return amountDialog;
   } catch (error) {
     if (amountDialog) {
       amountDialog.close();
