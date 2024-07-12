@@ -50,8 +50,8 @@ export const getZapEndpoint = async (profileMetadata) => {
   return zapEndpoint;
 };
 
-const signEvent = async (zapEvent) => {
-  if (isNipO7ExtAvailable()) {
+const signEvent = async (zapEvent, anon) => {
+  if (isNipO7ExtAvailable() && !anon) {
     try {
       return await window.nostr.signEvent(zapEvent);
     } catch (e) {
@@ -62,7 +62,7 @@ const signEvent = async (zapEvent) => {
   return finishEvent(zapEvent, generatePrivateKey());
 };
 
-const makeZapEvent = async ({ profile, event, amount, relays, comment }) => {
+const makeZapEvent = async ({ profile, event, amount, relays, comment, anon }) => {
   const zapEvent = nip57.makeZapRequest({
     profile,
     event,
@@ -71,7 +71,7 @@ const makeZapEvent = async ({ profile, event, amount, relays, comment }) => {
     comment,
   });
 
-  return signEvent(zapEvent);
+  return signEvent(zapEvent, anon);
 };
 
 export const fetchInvoice = async ({
@@ -81,6 +81,7 @@ export const fetchInvoice = async ({
   authorId,
   noteId,
   normalizedRelays,
+  anon
 }) => {
   const zapEvent = await makeZapEvent({
     profile: authorId,
@@ -88,6 +89,7 @@ export const fetchInvoice = async ({
     amount,
     relays: normalizedRelays,
     comment,
+    anon
   });
   let url = `${zapEndpoint}?amount=${amount}&nostr=${encodeURIComponent(
     JSON.stringify(zapEvent)
