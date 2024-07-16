@@ -9,6 +9,35 @@ import {
 } from "./nostr";
 import { getCachedLightningUri, cacheLightningUri } from "./cache";
 
+let shadow = null;
+
+const hexToRgb = (hex) => {
+  hex = hex.replace(/^#/, "");
+
+  if (hex.length === 3) {
+    hex = hex
+      .split("")
+      .map((char) => char + char)
+      .join("");
+  }
+
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return { r, g, b };
+};
+const getBrightness = ({ r, g, b }) => {
+  return (r * 299 + g * 587 + b * 114) / 1000;
+};
+
+const getContrastingTextColor = (hex) => {
+  const rgb = hexToRgb(hex);
+  const brightness = getBrightness(rgb);
+  return brightness < 128 ? "#fff" : "#000";
+};
+
 const renderDialog = (htmlStrTemplate) => {
   const dialog = document.createElement("dialog");
 
@@ -33,12 +62,12 @@ const renderDialog = (htmlStrTemplate) => {
     }
   });
 
-  document.body.appendChild(dialog);
+  shadow.appendChild(dialog);
 
   return dialog;
 };
 
-const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
+const renderInvoiceDialog = ({ dialogHeader, invoice, relays, buttonColor }) => {
   const cachedLightningUri = getCachedLightningUri();
   const options = [
     { label: "Default Wallet", value: "lightning:" },
@@ -72,7 +101,9 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
             )
             .join("")}
         </select>
-        <button class="cta-button">Open Wallet</button>
+        <button class="cta-button"
+          ${buttonColor ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(buttonColor)}"` : ""} 
+        >Open Wallet</button>
       `);
   const qrCodeEl = invoiceDialog.querySelector(".qrcode");
   const lightningWalletEl = invoiceDialog.querySelector(
@@ -115,7 +146,7 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays }) => {
   return invoiceDialog;
 };
 
-const renderAmountDialog = async ({ npub, noteId, relays }) => {
+const renderAmountDialog = async ({ npub, noteId, relays, buttonColor, anon }) => {
   const truncateNip19Entity = (hex) =>
     `${hex.substring(0, 12)}...${hex.substring(npub.length - 12)}`;
   const normalizedRelays = relays
@@ -169,7 +200,9 @@ const renderAmountDialog = async ({ npub, noteId, relays }) => {
       <form>
         <input name="amount" type="number" placeholder="amount in sats" required />
         <input name="comment" placeholder="optional comment" />
-        <button class="cta-button" type="submit" disabled>Zap</button>
+        <button class="cta-button" 
+          ${buttonColor ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(buttonColor)}"` : ""} 
+          type="submit" disabled>Zap</button>
       </form>
     `);
 
@@ -245,6 +278,7 @@ const renderAmountDialog = async ({ npub, noteId, relays }) => {
         authorId,
         noteId,
         normalizedRelays,
+        anon
       });
 
       const showInvoiceDialog = async () => {
@@ -252,6 +286,7 @@ const renderAmountDialog = async ({ npub, noteId, relays }) => {
           dialogHeader: await getDialogHeader(),
           invoice,
           relays: normalizedRelays,
+          buttonColor
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
@@ -301,11 +336,11 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
-export const init = async ({ npub, noteId, relays, cachedAmountDialog }) => {
+export const init = async ({ npub, noteId, relays, cachedAmountDialog, buttonColor, anon }) => {
   let amountDialog = cachedAmountDialog;
   try {
     if (!amountDialog) {
-      amountDialog = await renderAmountDialog({ npub, noteId, relays });
+      amountDialog = await renderAmountDialog({ npub, noteId, relays, buttonColor, anon });
     }
     amountDialog.showModal();
 
@@ -326,13 +361,29 @@ export const init = async ({ npub, noteId, relays, cachedAmountDialog }) => {
 
 export const initTarget = (targetEl) => {
   let cachedAmountDialog = null;
+  let cachedParams = null;
 
   targetEl.addEventListener("click", async function () {
     const npub = targetEl.getAttribute("data-npub");
     const noteId = targetEl.getAttribute("data-note-id");
     const relays = targetEl.getAttribute("data-relays");
+    const buttonColor = targetEl.getAttribute("data-button-color");
+    const anon = targetEl.getAttribute("data-anon") === "true";
 
-    cachedAmountDialog = await init({ npub, noteId, relays, cachedAmountDialog });
+    if (cachedParams) {
+      if (cachedParams.npub !== npub
+        || cachedParams.noteId !== noteId
+        || cachedParams.relays !== relays
+        || cachedParams.buttonColor !== buttonColor
+        || cachedParams.anon !== anon) {
+ 
+        cachedAmountDialog = null;
+      } 
+    }
+
+    cachedParams = { npub, noteId, relays, buttonColor, anon };
+
+    cachedAmountDialog = await init({ npub, noteId, relays, cachedAmountDialog, buttonColor, anon });
   });
 };
 
@@ -570,5 +621,8 @@ export const injectCSS = () => {
       }
   `;
 
-  document.head.appendChild(styleElement);
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  shadow = host.attachShadow({ mode: "open" });
+  shadow.appendChild(styleElement);
 };
