@@ -67,7 +67,12 @@ const renderDialog = (htmlStrTemplate) => {
   return dialog;
 };
 
-const renderInvoiceDialog = ({ dialogHeader, invoice, relays, buttonColor }) => {
+const renderInvoiceDialog = ({
+  dialogHeader,
+  invoice,
+  relays,
+  buttonColor,
+}) => {
   const cachedLightningUri = getCachedLightningUri();
   const options = [
     { label: "Default Wallet", value: "lightning:" },
@@ -102,7 +107,13 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays, buttonColor }) => 
             .join("")}
         </select>
         <button class="cta-button"
-          ${buttonColor ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(buttonColor)}"` : ""} 
+          ${
+            buttonColor
+              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
+                  buttonColor
+                )}"`
+              : ""
+          } 
         >Open Wallet</button>
       `);
   const qrCodeEl = invoiceDialog.querySelector(".qrcode");
@@ -146,7 +157,13 @@ const renderInvoiceDialog = ({ dialogHeader, invoice, relays, buttonColor }) => 
   return invoiceDialog;
 };
 
-const renderAmountDialog = async ({ npub, noteId, relays, buttonColor, anon }) => {
+const renderAmountDialog = async ({
+  npub,
+  noteId,
+  relays,
+  buttonColor,
+  anon,
+}) => {
   const truncateNip19Entity = (hex) =>
     `${hex.substring(0, 12)}...${hex.substring(npub.length - 12)}`;
   const normalizedRelays = relays
@@ -201,7 +218,13 @@ const renderAmountDialog = async ({ npub, noteId, relays, buttonColor, anon }) =
         <input name="amount" type="number" placeholder="amount in sats" required />
         <input name="comment" placeholder="optional comment" />
         <button class="cta-button" 
-          ${buttonColor ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(buttonColor)}"` : ""} 
+          ${
+            buttonColor
+              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
+                  buttonColor
+                )}"`
+              : ""
+          } 
           type="submit" disabled>Zap</button>
       </form>
     `);
@@ -278,7 +301,7 @@ const renderAmountDialog = async ({ npub, noteId, relays, buttonColor, anon }) =
         authorId,
         noteId,
         normalizedRelays,
-        anon
+        anon,
       });
 
       const showInvoiceDialog = async () => {
@@ -286,7 +309,7 @@ const renderAmountDialog = async ({ npub, noteId, relays, buttonColor, anon }) =
           dialogHeader: await getDialogHeader(),
           invoice,
           relays: normalizedRelays,
-          buttonColor
+          buttonColor,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
@@ -336,11 +359,24 @@ const renderErrorDialog = (message, npub) => {
   return errorDialog;
 };
 
-export const init = async ({ npub, noteId, relays, cachedAmountDialog, buttonColor, anon }) => {
+export const init = async ({
+  npub,
+  noteId,
+  relays,
+  cachedAmountDialog,
+  buttonColor,
+  anon,
+}) => {
   let amountDialog = cachedAmountDialog;
   try {
     if (!amountDialog) {
-      amountDialog = await renderAmountDialog({ npub, noteId, relays, buttonColor, anon });
+      amountDialog = await renderAmountDialog({
+        npub,
+        noteId,
+        relays,
+        buttonColor,
+        anon,
+      });
     }
     amountDialog.showModal();
 
@@ -358,7 +394,6 @@ export const init = async ({ npub, noteId, relays, cachedAmountDialog, buttonCol
   }
 };
 
-
 export const initTarget = (targetEl) => {
   let cachedAmountDialog = null;
   let cachedParams = null;
@@ -371,19 +406,27 @@ export const initTarget = (targetEl) => {
     const anon = targetEl.getAttribute("data-anon") === "true";
 
     if (cachedParams) {
-      if (cachedParams.npub !== npub
-        || cachedParams.noteId !== noteId
-        || cachedParams.relays !== relays
-        || cachedParams.buttonColor !== buttonColor
-        || cachedParams.anon !== anon) {
- 
+      if (
+        cachedParams.npub !== npub ||
+        cachedParams.noteId !== noteId ||
+        cachedParams.relays !== relays ||
+        cachedParams.buttonColor !== buttonColor ||
+        cachedParams.anon !== anon
+      ) {
         cachedAmountDialog = null;
-      } 
+      }
     }
 
     cachedParams = { npub, noteId, relays, buttonColor, anon };
 
-    cachedAmountDialog = await init({ npub, noteId, relays, cachedAmountDialog, buttonColor, anon });
+    cachedAmountDialog = await init({
+      npub,
+      noteId,
+      relays,
+      cachedAmountDialog,
+      buttonColor,
+      anon,
+    });
   });
 };
 
@@ -621,7 +664,7 @@ export const injectCSS = () => {
       }
   `;
 
-  const host = document.createElement('div');
+  const host = document.createElement("div");
   document.body.appendChild(host);
   shadow = host.attachShadow({ mode: "open" });
   shadow.appendChild(styleElement);
