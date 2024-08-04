@@ -107,9 +107,15 @@ export const fetchInvoice = async ({
   }
 
   const res = await fetch(url);
-  const { pr: invoice } = await res.json();
+  const { pr: invoice, reason, status } = await res.json();
 
-  return invoice;
+  if (invoice) {
+    return invoice;
+  } else if (status === "ERROR") {
+    throw new Error(reason ?? "Unable to fetch invoice");
+  } else {
+    throw new Error("Unable to fetch invoice");
+  }
 };
 
 export const isNipO7ExtAvailable = () => {
