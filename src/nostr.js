@@ -78,6 +78,11 @@ const makeZapEvent = async ({
     comment,
   });
 
+  // add anon tag so apps like damus display zap as anonymous
+  if (!isNipO7ExtAvailable() || anon) {
+    zapEvent.tags.push(["anon"]);
+  }
+
   return signEvent(zapEvent, anon);
 };
 
