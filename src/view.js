@@ -449,6 +449,7 @@ export const injectCSS = () => {
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        background-color: white;
       }
       .nostr-zap-dialog[open],
       .nostr-zap-dialog form {
