@@ -130,7 +130,7 @@ const renderInvoiceDialog = ({
     },
   });
 
-  new QRCode(qrCodeEl, { text: invoice });
+  new QRCode(qrCodeEl, { text: invoice, quietZone: 10 });
 
   qrCodeEl.addEventListener("click", function () {
     navigator.clipboard.writeText(invoice);
