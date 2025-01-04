@@ -8,7 +8,7 @@ Zap any Nostr npub or note from anywhere.
 Specify a target npub using a `data-npub` attribute on any HTML elements that you would like to turn into click targets. Optionally,
 you can specify a note ID using a `data-note-id` attribute if you'd like to zap a specific note. You can also optionally specify relays 
 that you'd like the zap receipt published to using a `data-relays` attribute. If you don't add a `data-relays` attribute, the zap 
-receipt will be blasted out to the top 300 relays using Blastr (wss://nostr.mutinywallet.com).
+receipt will be sent to a small set of default relays.
 
 If the user doesn't have an ext that supports nip-07 installed or does not authorize signing the zap event, an anonymous zap will be sent.
 ```html
