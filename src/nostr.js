@@ -8,7 +8,7 @@ import {
 
 export const decodeNpub = (npub) => nip19.decode(npub).data;
 
-const decodeNoteId = (noteId) => nip19.decode(noteId).data;
+const decodeNip19Entity = (nip19Entity) => nip19.decode(nip19Entity).data;
 
 let cachedProfileMetadata = {};
 
@@ -64,7 +64,7 @@ const signEvent = async (zapEvent, anon) => {
 
 const makeZapEvent = async ({
   profile,
-  event,
+  nip19Target,
   amount,
   relays,
   comment,
@@ -72,11 +72,17 @@ const makeZapEvent = async ({
 }) => {
   const zapEvent = nip57.makeZapRequest({
     profile,
-    event,
+    event: nip19Target && nip19Target.startsWith("note") ? decodeNip19Entity(nip19Target) : undefined,
     amount,
     relays,
     comment,
   });
+
+  const naddrData = nip19Target && nip19Target.startsWith("naddr") ? decodeNip19Entity(nip19Target) : undefined;
+  if (naddrData) {
+    const relays = naddrData.relays ? naddrData.relays.reduce((acc, r) => `${r},${acc}`, "") : "";
+    zapEvent.tags.push(["a", `${naddrData.kind}:${naddrData.pubkey}:${naddrData.identifier}`, relays]);
+  }
 
   // add anon tag so apps like damus display zap as anonymous
   if (!isNipO7ExtAvailable() || anon) {
@@ -91,13 +97,13 @@ export const fetchInvoice = async ({
   amount,
   comment,
   authorId,
-  noteId,
+  nip19Target,
   normalizedRelays,
   anon,
 }) => {
   const zapEvent = await makeZapEvent({
     profile: authorId,
-    event: noteId ? decodeNoteId(noteId) : undefined,
+    nip19Target,
     amount,
     relays: normalizedRelays,
     comment,
