@@ -159,13 +159,13 @@ const renderInvoiceDialog = ({
 
 const renderAmountDialog = async ({
   npub,
-  noteId,
+  nip19Target,
   relays,
   buttonColor,
   anon,
 }) => {
   const truncateNip19Entity = (hex) =>
-    `${hex.substring(0, 12)}...${hex.substring(npub.length - 12)}`;
+    `${hex.substring(0, 12)}...${hex.substring(hex.length - 12)}`;
   const normalizedRelays = relays
     ? relays.split(",")
     : ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nos.lol"];
@@ -189,7 +189,7 @@ const renderAmountDialog = async ({
           height="80"
           alt="nostr user avatar"
         />
-      <p>${noteId ? truncateNip19Entity(noteId) : truncateNip19Entity(npub)}</p>
+      <p>${nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)}</p>
     `;
   };
   const amountDialog = renderDialog(`
@@ -299,7 +299,7 @@ const renderAmountDialog = async ({
         amount,
         comment,
         authorId,
-        noteId,
+        nip19Target,
         normalizedRelays,
         anon,
       });
@@ -362,6 +362,7 @@ const renderErrorDialog = (message, npub) => {
 export const init = async ({
   npub,
   noteId,
+  naddr,
   relays,
   cachedAmountDialog,
   buttonColor,
@@ -372,7 +373,7 @@ export const init = async ({
     if (!amountDialog) {
       amountDialog = await renderAmountDialog({
         npub,
-        noteId,
+        nip19Target: naddr ? naddr : noteId,
         relays,
         buttonColor,
         anon,
@@ -401,6 +402,7 @@ export const initTarget = (targetEl) => {
   targetEl.addEventListener("click", async function () {
     const npub = targetEl.getAttribute("data-npub");
     const noteId = targetEl.getAttribute("data-note-id");
+    const naddr = targetEl.getAttribute("data-naddr");
     const relays = targetEl.getAttribute("data-relays");
     const buttonColor = targetEl.getAttribute("data-button-color");
     const anon = targetEl.getAttribute("data-anon") === "true";
@@ -409,6 +411,7 @@ export const initTarget = (targetEl) => {
       if (
         cachedParams.npub !== npub ||
         cachedParams.noteId !== noteId ||
+        cachedParams.naddr !== naddr ||
         cachedParams.relays !== relays ||
         cachedParams.buttonColor !== buttonColor ||
         cachedParams.anon !== anon
@@ -417,11 +420,12 @@ export const initTarget = (targetEl) => {
       }
     }
 
-    cachedParams = { npub, noteId, relays, buttonColor, anon };
+    cachedParams = { npub, noteId, naddr, relays, buttonColor, anon };
 
     cachedAmountDialog = await init({
       npub,
       noteId,
+      naddr,
       relays,
       cachedAmountDialog,
       buttonColor,
