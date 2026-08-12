@@ -113,9 +113,13 @@ const renderInvoiceDialog = ({
   invoice,
   relays,
   buttonColor,
+  usedAnonymousFallback,
 }) => {
   const cachedLightningUri = getCachedLightningUri();
   const safeButtonColor = normalizeButtonColor(buttonColor);
+  const anonymousNotice = usedAnonymousFallback
+    ? `<p class="zap-anon-notice">Extension signing was declined or failed. This zap will be sent anonymously.</p>`
+    : "";
   const options = [
     { label: "Default Wallet", value: "lightning:" },
     { label: "Strike", value: "strike:lightning:" },
@@ -134,6 +138,7 @@ const renderInvoiceDialog = ({
   const invoiceDialog = renderDialog(`
         <button class="close-button">X</button>
         ${dialogHeader}
+        ${anonymousNotice}
         <div class="qrcode">
           <div class="overlay">copied invoice to clipboard</div>
         </div>
@@ -310,7 +315,7 @@ const renderAmountDialog = async ({
       );
       const willSignWithExtension = isNipO7ExtAvailable() && !anon;
       const trustNote = willSignWithExtension
-        ? `<p class="zap-trust-note">Your extension will sign a zap request sent to this endpoint. Only continue if you trust it.</p>`
+        ? `<p class="zap-trust-note">Your extension will sign a zap request sent to this endpoint. Only continue if you trust it. If you decline, the zap will be sent anonymously.</p>`
         : "";
 
       zapDestinationContainer.innerHTML = `
@@ -365,7 +370,7 @@ const renderAmountDialog = async ({
     const comment = commentInput.value;
 
     try {
-      const invoice = await fetchInvoice({
+      const { invoice, usedAnonymousFallback } = await fetchInvoice({
         zapEndpoint: await zapEndpoint,
         amount,
         comment,
@@ -381,6 +386,7 @@ const renderAmountDialog = async ({
           invoice,
           relays: normalizedRelays,
           buttonColor: safeButtonColor,
+          usedAnonymousFallback,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
@@ -658,6 +664,12 @@ export const injectCSS = () => {
       }
       .nostr-zap-dialog .zap-trust-note {
         color: #744210;
+      }
+      .nostr-zap-dialog .zap-anon-notice {
+        font-size: 0.875em;
+        color: #744210;
+        margin: 8px 0 0 0;
+        word-break: break-word;
       }
       .nostr-zap-dialog .qrcode {
         position: relative;
