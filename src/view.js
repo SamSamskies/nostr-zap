@@ -102,6 +102,7 @@ const renderDialog = (htmlStrTemplate) => {
     }
   });
 
+  injectCSS();
   shadow.appendChild(dialog);
 
   return dialog;
@@ -542,6 +543,10 @@ export const initTargets = (selector) => {
 };
 
 export const injectCSS = () => {
+  if (shadow) {
+    return;
+  }
+
   const styleElement = document.createElement("style");
 
   styleElement.innerHTML = `
