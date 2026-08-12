@@ -11,6 +11,23 @@ import { getCachedLightningUri, cacheLightningUri } from "./cache";
 
 let shadow = null;
 
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const isSafeHttpUrl = (value) => {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+};
+
 const hexToRgb = (hex) => {
   hex = hex.replace(/^#/, "");
 
@@ -179,17 +196,23 @@ const renderAmountDialog = async ({
     const { picture, display_name, name } = extractProfileMetadataContent(
       await metadataPromise
     );
-    const userAvatar = picture || nostrichAvatar;
+    const userAvatar =
+      picture && isSafeHttpUrl(picture) ? picture : nostrichAvatar;
+    const displayName = escapeHtml(display_name || name || "");
+    const avatarUrl = escapeHtml(userAvatar);
+    const targetLabel = escapeHtml(
+      nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)
+    );
 
     return `
-      <h2>${display_name || name}</h2>
+      <h2>${displayName}</h2>
         <img
-          src="${userAvatar}"
+          src="${avatarUrl}"
           width="80"
           height="80"
           alt="nostr user avatar"
         />
-      <p>${nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)}</p>
+      <p>${targetLabel}</p>
     `;
   };
   const amountDialog = renderDialog(`
