@@ -148,38 +148,55 @@ export const isNipO7ExtAvailable = () => {
   return window !== undefined && window.nostr !== undefined;
 };
 
-export const listenForZapReceipt = ({ relays, invoice, onSuccess }) => {
+export const listenForZapReceipt = ({
+  relays,
+  invoice,
+  onSuccess,
+  recipientPubkey,
+}) => {
   const pool = new SimplePool();
   const normalizedRelays = Array.from(
     new Set([...relays, "wss://relay.nostr.band"])
   );
-  const closePool = () => {
-    if (pool) {
-      pool.close(normalizedRelays);
-    }
-  };
   const since = Math.round(Date.now() / 1000);
+  let closed = false;
+  let sub = null;
 
-  // check for zap receipt every 5 seconds
-  const intervalId = setInterval(() => {
-    const sub = pool.sub(normalizedRelays, [
-      {
-        kinds: [9735],
-        since,
-      },
-    ]);
+  const cleanup = () => {
+    if (closed) {
+      return;
+    }
 
-    sub.on("event", (event) => {
-      if (event.tags.find((t) => t[0] === "bolt11" && t[1] === invoice)) {
-        onSuccess();
-        closePool();
-        clearInterval(intervalId);
-      }
-    });
-  }, 5000);
+    closed = true;
 
-  return () => {
-    closePool();
-    clearInterval(intervalId);
+    if (sub) {
+      sub.unsub();
+      sub = null;
+    }
+
+    pool.close(normalizedRelays);
   };
+
+  const filter = {
+    kinds: [9735],
+    since,
+  };
+
+  if (recipientPubkey) {
+    filter["#p"] = [recipientPubkey];
+  }
+
+  sub = pool.sub(normalizedRelays, [filter]);
+  sub.on("event", (event) => {
+    if (closed) {
+      return;
+    }
+
+    if (event.tags.find((t) => t[0] === "bolt11" && t[1] === invoice)) {
+      onSuccess();
+      cleanup();
+    }
+  });
+
+  return cleanup;
 };

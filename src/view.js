@@ -114,6 +114,7 @@ const renderInvoiceDialog = ({
   relays,
   buttonColor,
   usedAnonymousFallback,
+  recipientPubkey,
 }) => {
   const cachedLightningUri = getCachedLightningUri();
   const safeButtonColor = normalizeButtonColor(buttonColor);
@@ -172,6 +173,7 @@ const renderInvoiceDialog = ({
   const closePool = listenForZapReceipt({
     relays,
     invoice,
+    recipientPubkey,
     onSuccess: () => {
       invoiceDialog.close();
     },
@@ -387,6 +389,7 @@ const renderAmountDialog = async ({
           relays: normalizedRelays,
           buttonColor: safeButtonColor,
           usedAnonymousFallback,
+          recipientPubkey: authorId,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
