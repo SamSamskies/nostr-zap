@@ -372,11 +372,15 @@ const renderAmountDialog = async ({
   return amountDialog;
 };
 
-const renderErrorDialog = (message, npub) => {
+const renderErrorDialog = (error, npub) => {
+  const message = escapeHtml(
+    error instanceof Error ? error.message : String(error ?? "Something went wrong")
+  );
+  const profileNpub = encodeURIComponent(String(npub ?? ""));
   const errorDialog = renderDialog(`
     <button class="close-button">X</button>
     <p class="error-message">${message}</p>
-    <a href="https://nosta.me/${npub}" target="_blank">
+    <a href="https://nosta.me/${profileNpub}" target="_blank" rel="noopener noreferrer">
       <button class="cta-button">View Nostr Profile</button>
     </a>
   `);
