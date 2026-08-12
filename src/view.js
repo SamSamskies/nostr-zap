@@ -11,6 +11,46 @@ import { getCachedLightningUri, cacheLightningUri } from "./cache";
 
 let shadow = null;
 
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const isSafeHttpUrl = (value) => {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+};
+
+// Prefer lud16; otherwise show the callback host so users can see where the zap request goes.
+const getZapDestinationLabel = (profileContent, zapEndpoint) => {
+  if (profileContent?.lud16 && typeof profileContent.lud16 === "string") {
+    return profileContent.lud16;
+  }
+
+  try {
+    return new URL(zapEndpoint).host;
+  } catch {
+    return zapEndpoint;
+  }
+};
+
+// Only allow #RGB / #RRGGBB so values cannot break out of inline styles.
+const normalizeButtonColor = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const hex = value.trim();
+  return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex) ? hex : null;
+};
+
 const hexToRgb = (hex) => {
   hex = hex.replace(/^#/, "");
 
@@ -67,13 +107,50 @@ const renderDialog = (htmlStrTemplate) => {
   return dialog;
 };
 
+const anonymousFallbackNoticeHtml = (pastTense = false) =>
+  `<p class="zap-anon-notice">Extension signing was declined or failed. This zap ${
+    pastTense ? "was" : "will be"
+  } sent anonymously.</p>`;
+
+const renderAnonymousFallbackNoticeDialog = () => {
+  const noticeDialog = renderDialog(`
+    <button class="close-button">X</button>
+    ${anonymousFallbackNoticeHtml(true)}
+    <button class="cta-button">OK</button>
+  `);
+
+  noticeDialog.addEventListener("close", function () {
+    noticeDialog.remove();
+  });
+
+  noticeDialog
+    .querySelector(".close-button")
+    .addEventListener("click", function () {
+      noticeDialog.close();
+    });
+
+  noticeDialog
+    .querySelector(".cta-button")
+    .addEventListener("click", function () {
+      noticeDialog.close();
+    });
+
+  return noticeDialog;
+};
+
 const renderInvoiceDialog = ({
   dialogHeader,
   invoice,
   relays,
   buttonColor,
+  usedAnonymousFallback,
+  recipientPubkey,
 }) => {
   const cachedLightningUri = getCachedLightningUri();
+  const safeButtonColor = normalizeButtonColor(buttonColor);
+  const anonymousNotice = usedAnonymousFallback
+    ? anonymousFallbackNoticeHtml()
+    : "";
   const options = [
     { label: "Default Wallet", value: "lightning:" },
     { label: "Strike", value: "strike:lightning:" },
@@ -92,6 +169,7 @@ const renderInvoiceDialog = ({
   const invoiceDialog = renderDialog(`
         <button class="close-button">X</button>
         ${dialogHeader}
+        ${anonymousNotice}
         <div class="qrcode">
           <div class="overlay">copied invoice to clipboard</div>
         </div>
@@ -108,9 +186,9 @@ const renderInvoiceDialog = ({
         </select>
         <button class="cta-button"
           ${
-            buttonColor
-              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
-                  buttonColor
+            safeButtonColor
+              ? `style="background-color: ${safeButtonColor}; color: ${getContrastingTextColor(
+                  safeButtonColor
                 )}"`
               : ""
           } 
@@ -125,6 +203,7 @@ const renderInvoiceDialog = ({
   const closePool = listenForZapReceipt({
     relays,
     invoice,
+    recipientPubkey,
     onSuccess: () => {
       invoiceDialog.close();
     },
@@ -168,28 +247,43 @@ const renderAmountDialog = async ({
     `${hex.substring(0, 12)}...${hex.substring(hex.length - 12)}`;
   const normalizedRelays = relays
     ? relays.split(",")
-    : ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nos.lol"];
+    : ["wss://relay.ditto.pub", "wss://relay.damus.io", "wss://nos.lol"];
 
   const authorId = decodeNpub(npub);
   const metadataPromise = getProfileMetadata(authorId);
+  const zapEndpoint = metadataPromise.then(getZapEndpoint);
+  const safeButtonColor = normalizeButtonColor(buttonColor);
   const nostrichAvatar =
     "https://pbs.twimg.com/profile_images/1604195803748306944/LxHDoJ7P_400x400.jpg";
 
   const getDialogHeader = async () => {
-    const { picture, display_name, name } = extractProfileMetadataContent(
-      await metadataPromise
+    const [profileMetadata, endpoint] = await Promise.all([
+      metadataPromise,
+      zapEndpoint,
+    ]);
+    const profileContent = extractProfileMetadataContent(profileMetadata);
+    const { picture, display_name, name } = profileContent;
+    const userAvatar =
+      picture && isSafeHttpUrl(picture) ? picture : nostrichAvatar;
+    const displayName = escapeHtml(display_name || name || "");
+    const avatarUrl = escapeHtml(userAvatar);
+    const destination = escapeHtml(
+      getZapDestinationLabel(profileContent, endpoint)
     );
-    const userAvatar = picture || nostrichAvatar;
+    const targetLabel = escapeHtml(
+      nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)
+    );
 
     return `
-      <h2>${display_name || name}</h2>
+      <h2>${displayName}</h2>
         <img
-          src="${userAvatar}"
+          src="${avatarUrl}"
           width="80"
           height="80"
           alt="nostr user avatar"
         />
-      <p>${nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)}</p>
+      <p class="zap-destination">${destination}</p>
+      <p>${targetLabel}</p>
     `;
   };
   const amountDialog = renderDialog(`
@@ -219,9 +313,9 @@ const renderAmountDialog = async ({
         <input name="comment" placeholder="optional comment" />
         <button class="cta-button" 
           ${
-            buttonColor
-              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
-                  buttonColor
+            safeButtonColor
+              ? `style="background-color: ${safeButtonColor}; color: ${getContrastingTextColor(
+                  safeButtonColor
                 )}"`
               : ""
           } 
@@ -284,8 +378,6 @@ const renderAmountDialog = async ({
     }
   });
 
-  const zapEndpoint = metadataPromise.then(getZapEndpoint);
-
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
     setZapButtonToLoadingState();
@@ -294,7 +386,7 @@ const renderAmountDialog = async ({
     const comment = commentInput.value;
 
     try {
-      const invoice = await fetchInvoice({
+      const { invoice, usedAnonymousFallback } = await fetchInvoice({
         zapEndpoint: await zapEndpoint,
         amount,
         comment,
@@ -309,7 +401,9 @@ const renderAmountDialog = async ({
           dialogHeader: await getDialogHeader(),
           invoice,
           relays: normalizedRelays,
-          buttonColor,
+          buttonColor: safeButtonColor,
+          usedAnonymousFallback,
+          recipientPubkey: authorId,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
@@ -323,6 +417,11 @@ const renderAmountDialog = async ({
           await window.webln.enable();
           await window.webln.sendPayment(invoice);
           amountDialog.close();
+          if (usedAnonymousFallback) {
+            const noticeDialog = renderAnonymousFallbackNoticeDialog();
+            noticeDialog.showModal();
+            noticeDialog.querySelector(".cta-button").focus();
+          }
         } catch (e) {
           showInvoiceDialog();
         }
@@ -337,11 +436,15 @@ const renderAmountDialog = async ({
   return amountDialog;
 };
 
-const renderErrorDialog = (message, npub) => {
+const renderErrorDialog = (error, npub) => {
+  const message = escapeHtml(
+    error instanceof Error ? error.message : String(error ?? "Something went wrong")
+  );
+  const profileNpub = encodeURIComponent(String(npub ?? ""));
   const errorDialog = renderDialog(`
     <button class="close-button">X</button>
     <p class="error-message">${message}</p>
-    <a href="https://nosta.me/${npub}" target="_blank">
+    <a href="https://nosta.me/${profileNpub}" target="_blank" rel="noopener noreferrer">
       <button class="cta-button">View Nostr Profile</button>
     </a>
   `);
@@ -570,6 +673,18 @@ export const injectCSS = () => {
         color: red;
         margin-top: 8px;
       }
+      .nostr-zap-dialog .zap-destination {
+        font-size: 0.875em;
+        color: #4a5568;
+        margin: 4px;
+        word-break: break-word;
+      }
+      .nostr-zap-dialog .zap-anon-notice {
+        font-size: 0.875em;
+        color: #744210;
+        margin: 8px 0 0 0;
+        word-break: break-word;
+      }
       .nostr-zap-dialog .qrcode {
         position: relative;
         display: inline-block;
@@ -671,6 +786,6 @@ export const injectCSS = () => {
 
   const host = document.createElement("div");
   document.body.appendChild(host);
-  shadow = host.attachShadow({ mode: "open" });
+  shadow = host.attachShadow({ mode: "closed" });
   shadow.appendChild(styleElement);
 };

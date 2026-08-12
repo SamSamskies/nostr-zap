@@ -19,7 +19,7 @@ export const getProfileMetadata = async (authorId) => {
 
   const pool = new SimplePool();
   const relays = [
-    "wss://relay.nostr.band",
+    "wss://relay.ditto.pub",
     "wss://purplepag.es",
     "wss://relay.damus.io",
     "wss://nostr.wine",
@@ -51,15 +51,29 @@ export const getZapEndpoint = async (profileMetadata) => {
 };
 
 const signEvent = async (zapEvent, anon) => {
-  if (isNipO7ExtAvailable() && !anon) {
+  const wantsExtension = isNipO7ExtAvailable() && !anon;
+
+  if (wantsExtension) {
     try {
-      return await window.nostr.signEvent(zapEvent);
+      return {
+        signedEvent: await window.nostr.signEvent(zapEvent),
+        signedAnonymously: false,
+        usedAnonymousFallback: false,
+      };
     } catch (e) {
-      // fail silently and sign event as an anonymous user
+      // Extension prompt declined or failed — fall back to anonymous signing.
     }
   }
 
-  return finishEvent(zapEvent, generatePrivateKey());
+  if (!zapEvent.tags.some((tag) => tag[0] === "anon")) {
+    zapEvent.tags.push(["anon"]);
+  }
+
+  return {
+    signedEvent: finishEvent(zapEvent, generatePrivateKey()),
+    signedAnonymously: true,
+    usedAnonymousFallback: wantsExtension,
+  };
 };
 
 const makeZapEvent = async ({
@@ -84,7 +98,7 @@ const makeZapEvent = async ({
     zapEvent.tags.push(["a", `${naddrData.kind}:${naddrData.pubkey}:${naddrData.identifier}`, relays]);
   }
 
-  // add anon tag so apps like damus display zap as anonymous
+  // Prefer the anon tag before the first sign attempt when anonymity is intentional.
   if (!isNipO7ExtAvailable() || anon) {
     zapEvent.tags.push(["anon"]);
   }
@@ -101,16 +115,17 @@ export const fetchInvoice = async ({
   normalizedRelays,
   anon,
 }) => {
-  const zapEvent = await makeZapEvent({
-    profile: authorId,
-    nip19Target,
-    amount,
-    relays: normalizedRelays,
-    comment,
-    anon,
-  });
+  const { signedEvent, signedAnonymously, usedAnonymousFallback } =
+    await makeZapEvent({
+      profile: authorId,
+      nip19Target,
+      amount,
+      relays: normalizedRelays,
+      comment,
+      anon,
+    });
   let url = `${zapEndpoint}?amount=${amount}&nostr=${encodeURIComponent(
-    JSON.stringify(zapEvent)
+    JSON.stringify(signedEvent)
   )}`;
 
   if (comment) {
@@ -121,7 +136,7 @@ export const fetchInvoice = async ({
   const { pr: invoice, reason, status } = await res.json();
 
   if (invoice) {
-    return invoice;
+    return { invoice, signedAnonymously, usedAnonymousFallback };
   } else if (status === "ERROR") {
     throw new Error(reason ?? "Unable to fetch invoice");
   } else {
@@ -133,38 +148,77 @@ export const isNipO7ExtAvailable = () => {
   return window !== undefined && window.nostr !== undefined;
 };
 
-export const listenForZapReceipt = ({ relays, invoice, onSuccess }) => {
+export const listenForZapReceipt = ({
+  relays,
+  invoice,
+  onSuccess,
+  recipientPubkey,
+}) => {
   const pool = new SimplePool();
   const normalizedRelays = Array.from(
-    new Set([...relays, "wss://relay.nostr.band"])
+    new Set([...relays, "wss://relay.ditto.pub"])
   );
-  const closePool = () => {
-    if (pool) {
-      pool.close(normalizedRelays);
-    }
-  };
   const since = Math.round(Date.now() / 1000);
+  let closed = false;
+  let sub = null;
+  let intervalId = null;
 
-  // check for zap receipt every 5 seconds
-  const intervalId = setInterval(() => {
-    const sub = pool.sub(normalizedRelays, [
-      {
-        kinds: [9735],
-        since,
-      },
-    ]);
+  const cleanup = () => {
+    if (closed) {
+      return;
+    }
 
+    closed = true;
+
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    if (sub) {
+      sub.unsub();
+      sub = null;
+    }
+
+    pool.close(normalizedRelays);
+  };
+
+  const filter = {
+    kinds: [9735],
+    since,
+  };
+
+  if (recipientPubkey) {
+    filter["#p"] = [recipientPubkey];
+  }
+
+  // Resubscribe periodically so dropped relay sockets reconnect and the
+  // invoice dialog can still close after a successful payment.
+  const subscribe = () => {
+    if (closed) {
+      return;
+    }
+
+    if (sub) {
+      sub.unsub();
+      sub = null;
+    }
+
+    sub = pool.sub(normalizedRelays, [filter]);
     sub.on("event", (event) => {
+      if (closed) {
+        return;
+      }
+
       if (event.tags.find((t) => t[0] === "bolt11" && t[1] === invoice)) {
         onSuccess();
-        closePool();
-        clearInterval(intervalId);
+        cleanup();
       }
     });
-  }, 5000);
-
-  return () => {
-    closePool();
-    clearInterval(intervalId);
   };
+
+  subscribe();
+  intervalId = setInterval(subscribe, 5000);
+
+  return cleanup;
 };
