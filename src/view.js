@@ -220,18 +220,25 @@ const renderAmountDialog = async ({
 
   const authorId = decodeNpub(npub);
   const metadataPromise = getProfileMetadata(authorId);
+  const zapEndpoint = metadataPromise.then(getZapEndpoint);
   const safeButtonColor = normalizeButtonColor(buttonColor);
   const nostrichAvatar =
     "https://pbs.twimg.com/profile_images/1604195803748306944/LxHDoJ7P_400x400.jpg";
 
   const getDialogHeader = async () => {
-    const { picture, display_name, name } = extractProfileMetadataContent(
-      await metadataPromise
-    );
+    const [profileMetadata, endpoint] = await Promise.all([
+      metadataPromise,
+      zapEndpoint,
+    ]);
+    const profileContent = extractProfileMetadataContent(profileMetadata);
+    const { picture, display_name, name } = profileContent;
     const userAvatar =
       picture && isSafeHttpUrl(picture) ? picture : nostrichAvatar;
     const displayName = escapeHtml(display_name || name || "");
     const avatarUrl = escapeHtml(userAvatar);
+    const destination = escapeHtml(
+      getZapDestinationLabel(profileContent, endpoint)
+    );
     const targetLabel = escapeHtml(
       nip19Target ? truncateNip19Entity(nip19Target) : truncateNip19Entity(npub)
     );
@@ -244,6 +251,7 @@ const renderAmountDialog = async ({
           height="80"
           alt="nostr user avatar"
         />
+      <p class="zap-destination">${destination}</p>
       <p>${targetLabel}</p>
     `;
   };
@@ -272,7 +280,6 @@ const renderAmountDialog = async ({
       <form>
         <input name="amount" type="number" placeholder="amount in sats" required />
         <input name="comment" placeholder="optional comment" />
-        <div class="zap-destination-container" hidden></div>
         <button class="cta-button" 
           ${
             safeButtonColor
@@ -295,9 +302,6 @@ const renderAmountDialog = async ({
   const dialogHeaderContainer = amountDialog.querySelector(
     ".dialog-header-container"
   );
-  const zapDestinationContainer = amountDialog.querySelector(
-    ".zap-destination-container"
-  );
   const handleError = (error) => {
     amountDialog.close();
 
@@ -306,22 +310,7 @@ const renderAmountDialog = async ({
     errorDialog.showModal();
   };
 
-  const zapEndpoint = metadataPromise.then(getZapEndpoint);
-
-  Promise.all([metadataPromise, zapEndpoint])
-    .then(([profileMetadata, endpoint]) => {
-      const profileContent = extractProfileMetadataContent(profileMetadata);
-      const destination = escapeHtml(
-        getZapDestinationLabel(profileContent, endpoint)
-      );
-
-      zapDestinationContainer.innerHTML = `
-        <p class="zap-destination">Invoice from <strong>${destination}</strong></p>
-      `;
-      zapDestinationContainer.hidden = false;
-
-      return getDialogHeader();
-    })
+  getDialogHeader()
     .then((htmlString) => {
       dialogHeaderContainer.innerHTML = htmlString;
       zapButtton.disabled = false;
@@ -648,14 +637,10 @@ export const injectCSS = () => {
         color: red;
         margin-top: 8px;
       }
-      .nostr-zap-dialog .zap-destination-container {
-        text-align: left;
-        margin: 0 0 8px 0;
-      }
       .nostr-zap-dialog .zap-destination {
         font-size: 0.875em;
         color: #4a5568;
-        margin: 0 0 4px 0;
+        margin: 4px;
         word-break: break-word;
       }
       .nostr-zap-dialog .zap-anon-notice {
