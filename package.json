@@ -7,11 +7,16 @@
   "targets": {
     "main": {
       "includeNodeModules": true
+    },
+    "example": {
+      "source": "example/index.html",
+      "distDir": "example/dist",
+      "context": "browser"
     }
   },
   "scripts": {
-    "build": "parcel build",
-    "dev": "npm run build && parcel example/index.html --open",
+    "build": "parcel build --target main",
+    "dev": "npm run build && parcel --target example --open --port 5173",
     "prepare": "npm run build",
     "test": "echo TODO"
   },
@@ -32,11 +37,11 @@
   },
   "homepage": "https://github.com/SamSamskies/nostr-zap#readme",
   "devDependencies": {
-    "parcel": "2.9.3",
-    "prettier": "2.8.8"
+    "parcel": "2.16.4",
+    "prettier": "3.9.6"
   },
   "dependencies": {
-    "easyqrcodejs": "4.4.13",
+    "easyqrcodejs": "4.6.2",
     "nostr-tools": "1.10.1"
   }
 }
