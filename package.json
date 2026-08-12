@@ -32,11 +32,11 @@
   },
   "homepage": "https://github.com/SamSamskies/nostr-zap#readme",
   "devDependencies": {
-    "parcel": "^2.9.3",
+    "parcel": "2.9.3",
     "prettier": "2.8.8"
   },
   "dependencies": {
-    "easyqrcodejs": "^4.4.13",
-    "nostr-tools": "^1.10.1"
+    "easyqrcodejs": "4.4.13",
+    "nostr-tools": "1.10.1"
   }
 }
