@@ -217,7 +217,7 @@ const renderAmountDialog = async ({
     `${hex.substring(0, 12)}...${hex.substring(hex.length - 12)}`;
   const normalizedRelays = relays
     ? relays.split(",")
-    : ["wss://relay.nostr.band", "wss://relay.damus.io", "wss://nos.lol"];
+    : ["wss://relay.ditto.pub", "wss://relay.damus.io", "wss://nos.lol"];
 
   const authorId = decodeNpub(npub);
   const metadataPromise = getProfileMetadata(authorId);

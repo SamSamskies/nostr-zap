@@ -19,7 +19,7 @@ export const getProfileMetadata = async (authorId) => {
 
   const pool = new SimplePool();
   const relays = [
-    "wss://relay.nostr.band",
+    "wss://relay.ditto.pub",
     "wss://purplepag.es",
     "wss://relay.damus.io",
     "wss://nostr.wine",
@@ -156,7 +156,7 @@ export const listenForZapReceipt = ({
 }) => {
   const pool = new SimplePool();
   const normalizedRelays = Array.from(
-    new Set([...relays, "wss://relay.nostr.band"])
+    new Set([...relays, "wss://relay.ditto.pub"])
   );
   const since = Math.round(Date.now() / 1000);
   let closed = false;

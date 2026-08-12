@@ -14,7 +14,7 @@ If the user doesn't have an ext that supports nip-07 installed or does not autho
 ```html
 <button
     data-npub="npub1vp8fdcyejd4pqjyrjk9sgz68vuhq7pyvnzk8j0ehlljvwgp8n6eqsrnpsw"
-    data-relays="wss://relay.damus.io,wss://relay.snort.social,wss://nostr.wine,wss://relay.nostr.band"
+    data-relays="wss://relay.damus.io,wss://nostr.wine,wss://relay.ditto.pub"
 >
   Zap Me ⚡️
 </button>
