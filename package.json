@@ -7,11 +7,16 @@
   "targets": {
     "main": {
       "includeNodeModules": true
+    },
+    "example": {
+      "source": "example/index.html",
+      "distDir": "example/dist",
+      "context": "browser"
     }
   },
   "scripts": {
-    "build": "parcel build",
-    "dev": "npm run build && parcel example/index.html --open",
+    "build": "parcel build --target main",
+    "dev": "npm run build && parcel --target example --open",
     "prepare": "npm run build",
     "test": "echo TODO"
   },
