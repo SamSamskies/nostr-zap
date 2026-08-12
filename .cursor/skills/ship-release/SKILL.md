@@ -1,6 +1,6 @@
 ---
 name: ship-release
-description: Prep and publish a nostr-zap npm release (version bump, build, SRI README update, tag, npm publish, push). Use when the user asks to ship, release, publish, or cut a new version of nostr-zap.
+description: Prep and publish a nostr-zap npm release (version bump, build, SRI README update, tag, npm publish, push, GitHub Release notes). Use when the user asks to ship, release, publish, or cut a new version of nostr-zap.
 ---
 
 # Ship nostr-zap release
@@ -31,7 +31,8 @@ Release Progress:
 - [ ] 6. Tag
 - [ ] 7. npm publish
 - [ ] 8. Push commit + tag
-- [ ] 9. Verify
+- [ ] 9. GitHub Release
+- [ ] 10. Verify
 ```
 
 ### 1. Confirm version
@@ -115,12 +116,40 @@ git push origin main
 git push origin vX.Y.Z
 ```
 
-### 9. Verify
+### 9. GitHub Release
+
+After the tag is on the remote, create a GitHub Release matching prior style
+(see `gh release view v1.3.0`):
+
+```bash
+gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(cat <<'EOF'
+- <user-facing commit subject> (#N)  <shortsha>
+- <user-facing commit subject>  <shortsha>
+
+---
+
+https://github.com/SamSamskies/nostr-zap/compare/vPREV...vX.Y.Z
+EOF
+)"
+```
+
+Notes rules:
+
+- List commits since the previous version tag (`git log vPREV..vX.Y.Z --oneline --no-merges`)
+- Include user-facing product/fix commits and PR numbers when present
+- Omit version-bump-only commits, skill/docs-only chore commits, and merge commits
+- End with a compare link to the previous tag
+
+If `gh release create` fails because the release already exists, update notes with
+`gh release edit` only when the user asks.
+
+### 10. Verify
 
 - `npm view nostr-zap version` → new version
+- `gh release view vX.Y.Z` succeeds
 - jsDelivr URL loads (may lag briefly):  
   `https://cdn.jsdelivr.net/npm/nostr-zap@X.Y.Z/dist/main.js`
-- Report: version, npm URL, tag, and that README SRI was updated
+- Report: version, npm URL, tag, GitHub Release URL, and that README SRI was updated
 
 ## Do not
 
@@ -128,4 +157,4 @@ git push origin vX.Y.Z
 - Publish with a dirty unrelated working tree
 - Pin or document `main.min.js` with `integrity`
 - Skip the SRI update when bumping the README version
-- Create a GitHub Release unless the user asks
+- Skip the GitHub Release step
