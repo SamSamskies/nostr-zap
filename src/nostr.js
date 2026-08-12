@@ -161,6 +161,7 @@ export const listenForZapReceipt = ({
   const since = Math.round(Date.now() / 1000);
   let closed = false;
   let sub = null;
+  let intervalId = null;
 
   const cleanup = () => {
     if (closed) {
@@ -168,6 +169,11 @@ export const listenForZapReceipt = ({
     }
 
     closed = true;
+
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
 
     if (sub) {
       sub.unsub();
@@ -186,17 +192,33 @@ export const listenForZapReceipt = ({
     filter["#p"] = [recipientPubkey];
   }
 
-  sub = pool.sub(normalizedRelays, [filter]);
-  sub.on("event", (event) => {
+  // Resubscribe periodically so dropped relay sockets reconnect and the
+  // invoice dialog can still close after a successful payment.
+  const subscribe = () => {
     if (closed) {
       return;
     }
 
-    if (event.tags.find((t) => t[0] === "bolt11" && t[1] === invoice)) {
-      onSuccess();
-      cleanup();
+    if (sub) {
+      sub.unsub();
+      sub = null;
     }
-  });
+
+    sub = pool.sub(normalizedRelays, [filter]);
+    sub.on("event", (event) => {
+      if (closed) {
+        return;
+      }
+
+      if (event.tags.find((t) => t[0] === "bolt11" && t[1] === invoice)) {
+        onSuccess();
+        cleanup();
+      }
+    });
+  };
+
+  subscribe();
+  intervalId = setInterval(subscribe, 5000);
 
   return cleanup;
 };
