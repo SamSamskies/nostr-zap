@@ -760,6 +760,6 @@ export const injectCSS = () => {
 
   const host = document.createElement("div");
   document.body.appendChild(host);
-  shadow = host.attachShadow({ mode: "open" });
+  shadow = host.attachShadow({ mode: "closed" });
   shadow.appendChild(styleElement);
 };
