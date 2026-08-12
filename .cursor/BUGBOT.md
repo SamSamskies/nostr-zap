@@ -2,4 +2,4 @@
 
 ## CDN script URL
 
-README loads `dist/main.min.js` from jsDelivr. The Parcel build emits `dist/main.js` (`package.json` `"main"`). jsDelivr serves a minified variant for `.min.js` — both paths are correct; do not flag the README URL as a 404.
+README loads the published `dist/main.js` from jsDelivr with an SRI hash. Prefer that over jsDelivr's on-demand `main.min.js`, which is not safe to pin with `integrity`.

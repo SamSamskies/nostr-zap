@@ -23,8 +23,8 @@ If the user doesn't have an ext that supports nip-07 installed or does not autho
 Add this script tag right before the bottom closing body tag. Pin a specific version and include the `integrity` hash so the browser rejects a tampered CDN response. When you upgrade, update both the version and the hash (for example with [`srihash.org`](https://www.srihash.org/)).
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/nostr-zap@1.3.0/dist/main.min.js"
-  integrity="sha384-dF2phb7i2kgBsZt2g7SU9ttJ8W84a0WkPvUWqNUQgXhmXEcTLgcqo/dcLFhs4y2K"
+  src="https://cdn.jsdelivr.net/npm/nostr-zap@1.3.0/dist/main.js"
+  integrity="sha384-lbcU5KWFEfmAHYy+YXXCpRTMmd3NL7I3u4Bt1J7e9ZrdxaRTlr8VRmch+vdeA5MF"
   crossorigin="anonymous"
 ></script>
 ```
