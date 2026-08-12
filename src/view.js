@@ -5,6 +5,7 @@ import {
   fetchInvoice,
   getProfileMetadata,
   getZapEndpoint,
+  isNipO7ExtAvailable,
   listenForZapReceipt,
 } from "./nostr";
 import { getCachedLightningUri, cacheLightningUri } from "./cache";
@@ -25,6 +26,19 @@ const isSafeHttpUrl = (value) => {
     return protocol === "https:" || protocol === "http:";
   } catch {
     return false;
+  }
+};
+
+// Prefer lud16; otherwise show the callback host so users can see where the zap request goes.
+const getZapDestinationLabel = (profileContent, zapEndpoint) => {
+  if (profileContent?.lud16 && typeof profileContent.lud16 === "string") {
+    return profileContent.lud16;
+  }
+
+  try {
+    return new URL(zapEndpoint).host;
+  } catch {
+    return zapEndpoint;
   }
 };
 
@@ -252,6 +266,7 @@ const renderAmountDialog = async ({
       <form>
         <input name="amount" type="number" placeholder="amount in sats" required />
         <input name="comment" placeholder="optional comment" />
+        <div class="zap-destination-container" hidden></div>
         <button class="cta-button" 
           ${
             safeButtonColor
@@ -274,6 +289,9 @@ const renderAmountDialog = async ({
   const dialogHeaderContainer = amountDialog.querySelector(
     ".dialog-header-container"
   );
+  const zapDestinationContainer = amountDialog.querySelector(
+    ".zap-destination-container"
+  );
   const handleError = (error) => {
     amountDialog.close();
 
@@ -282,7 +300,27 @@ const renderAmountDialog = async ({
     errorDialog.showModal();
   };
 
-  getDialogHeader()
+  const zapEndpoint = metadataPromise.then(getZapEndpoint);
+
+  Promise.all([metadataPromise, zapEndpoint])
+    .then(([profileMetadata, endpoint]) => {
+      const profileContent = extractProfileMetadataContent(profileMetadata);
+      const destination = escapeHtml(
+        getZapDestinationLabel(profileContent, endpoint)
+      );
+      const willSignWithExtension = isNipO7ExtAvailable() && !anon;
+      const trustNote = willSignWithExtension
+        ? `<p class="zap-trust-note">Your extension will sign a zap request sent to this endpoint. Only continue if you trust it.</p>`
+        : "";
+
+      zapDestinationContainer.innerHTML = `
+        <p class="zap-destination">Invoice from <strong>${destination}</strong></p>
+        ${trustNote}
+      `;
+      zapDestinationContainer.hidden = false;
+
+      return getDialogHeader();
+    })
     .then((htmlString) => {
       dialogHeaderContainer.innerHTML = htmlString;
       zapButtton.disabled = false;
@@ -318,8 +356,6 @@ const renderAmountDialog = async ({
       amountInput.focus();
     }
   });
-
-  const zapEndpoint = metadataPromise.then(getZapEndpoint);
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -608,6 +644,20 @@ export const injectCSS = () => {
         text-align: left;
         color: red;
         margin-top: 8px;
+      }
+      .nostr-zap-dialog .zap-destination-container {
+        text-align: left;
+        margin: 0 0 8px 0;
+      }
+      .nostr-zap-dialog .zap-destination,
+      .nostr-zap-dialog .zap-trust-note {
+        font-size: 0.875em;
+        color: #4a5568;
+        margin: 0 0 4px 0;
+        word-break: break-word;
+      }
+      .nostr-zap-dialog .zap-trust-note {
+        color: #744210;
       }
       .nostr-zap-dialog .qrcode {
         position: relative;
