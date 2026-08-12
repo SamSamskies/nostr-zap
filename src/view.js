@@ -5,7 +5,6 @@ import {
   fetchInvoice,
   getProfileMetadata,
   getZapEndpoint,
-  isNipO7ExtAvailable,
   listenForZapReceipt,
 } from "./nostr";
 import { getCachedLightningUri, cacheLightningUri } from "./cache";
@@ -315,14 +314,9 @@ const renderAmountDialog = async ({
       const destination = escapeHtml(
         getZapDestinationLabel(profileContent, endpoint)
       );
-      const willSignWithExtension = isNipO7ExtAvailable() && !anon;
-      const trustNote = willSignWithExtension
-        ? `<p class="zap-trust-note">Your extension will sign a zap request sent to this endpoint. Only continue if you trust it. If you decline, the zap will be sent anonymously.</p>`
-        : "";
 
       zapDestinationContainer.innerHTML = `
         <p class="zap-destination">Invoice from <strong>${destination}</strong></p>
-        ${trustNote}
       `;
       zapDestinationContainer.hidden = false;
 
@@ -658,15 +652,11 @@ export const injectCSS = () => {
         text-align: left;
         margin: 0 0 8px 0;
       }
-      .nostr-zap-dialog .zap-destination,
-      .nostr-zap-dialog .zap-trust-note {
+      .nostr-zap-dialog .zap-destination {
         font-size: 0.875em;
         color: #4a5568;
         margin: 0 0 4px 0;
         word-break: break-word;
-      }
-      .nostr-zap-dialog .zap-trust-note {
-        color: #744210;
       }
       .nostr-zap-dialog .zap-anon-notice {
         font-size: 0.875em;
