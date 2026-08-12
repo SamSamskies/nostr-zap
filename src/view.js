@@ -107,6 +107,37 @@ const renderDialog = (htmlStrTemplate) => {
   return dialog;
 };
 
+const anonymousFallbackNoticeHtml = (pastTense = false) =>
+  `<p class="zap-anon-notice">Extension signing was declined or failed. This zap ${
+    pastTense ? "was" : "will be"
+  } sent anonymously.</p>`;
+
+const renderAnonymousFallbackNoticeDialog = () => {
+  const noticeDialog = renderDialog(`
+    <button class="close-button">X</button>
+    ${anonymousFallbackNoticeHtml(true)}
+    <button class="cta-button">OK</button>
+  `);
+
+  noticeDialog.addEventListener("close", function () {
+    noticeDialog.remove();
+  });
+
+  noticeDialog
+    .querySelector(".close-button")
+    .addEventListener("click", function () {
+      noticeDialog.close();
+    });
+
+  noticeDialog
+    .querySelector(".cta-button")
+    .addEventListener("click", function () {
+      noticeDialog.close();
+    });
+
+  return noticeDialog;
+};
+
 const renderInvoiceDialog = ({
   dialogHeader,
   invoice,
@@ -118,7 +149,7 @@ const renderInvoiceDialog = ({
   const cachedLightningUri = getCachedLightningUri();
   const safeButtonColor = normalizeButtonColor(buttonColor);
   const anonymousNotice = usedAnonymousFallback
-    ? `<p class="zap-anon-notice">Extension signing was declined or failed. This zap will be sent anonymously.</p>`
+    ? anonymousFallbackNoticeHtml()
     : "";
   const options = [
     { label: "Default Wallet", value: "lightning:" },
@@ -386,6 +417,11 @@ const renderAmountDialog = async ({
           await window.webln.enable();
           await window.webln.sendPayment(invoice);
           amountDialog.close();
+          if (usedAnonymousFallback) {
+            const noticeDialog = renderAnonymousFallbackNoticeDialog();
+            noticeDialog.showModal();
+            noticeDialog.querySelector(".cta-button").focus();
+          }
         } catch (e) {
           showInvoiceDialog();
         }
