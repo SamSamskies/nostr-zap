@@ -28,6 +28,16 @@ const isSafeHttpUrl = (value) => {
   }
 };
 
+// Only allow #RGB / #RRGGBB so values cannot break out of inline styles.
+const normalizeButtonColor = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const hex = value.trim();
+  return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(hex) ? hex : null;
+};
+
 const hexToRgb = (hex) => {
   hex = hex.replace(/^#/, "");
 
@@ -91,6 +101,7 @@ const renderInvoiceDialog = ({
   buttonColor,
 }) => {
   const cachedLightningUri = getCachedLightningUri();
+  const safeButtonColor = normalizeButtonColor(buttonColor);
   const options = [
     { label: "Default Wallet", value: "lightning:" },
     { label: "Strike", value: "strike:lightning:" },
@@ -125,9 +136,9 @@ const renderInvoiceDialog = ({
         </select>
         <button class="cta-button"
           ${
-            buttonColor
-              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
-                  buttonColor
+            safeButtonColor
+              ? `style="background-color: ${safeButtonColor}; color: ${getContrastingTextColor(
+                  safeButtonColor
                 )}"`
               : ""
           } 
@@ -189,6 +200,7 @@ const renderAmountDialog = async ({
 
   const authorId = decodeNpub(npub);
   const metadataPromise = getProfileMetadata(authorId);
+  const safeButtonColor = normalizeButtonColor(buttonColor);
   const nostrichAvatar =
     "https://pbs.twimg.com/profile_images/1604195803748306944/LxHDoJ7P_400x400.jpg";
 
@@ -242,9 +254,9 @@ const renderAmountDialog = async ({
         <input name="comment" placeholder="optional comment" />
         <button class="cta-button" 
           ${
-            buttonColor
-              ? `style="background-color: ${buttonColor}; color: ${getContrastingTextColor(
-                  buttonColor
+            safeButtonColor
+              ? `style="background-color: ${safeButtonColor}; color: ${getContrastingTextColor(
+                  safeButtonColor
                 )}"`
               : ""
           } 
@@ -332,7 +344,7 @@ const renderAmountDialog = async ({
           dialogHeader: await getDialogHeader(),
           invoice,
           relays: normalizedRelays,
-          buttonColor,
+          buttonColor: safeButtonColor,
         });
         const openWalletButton = invoiceDialog.querySelector(".cta-button");
 
