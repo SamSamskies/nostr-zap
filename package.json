@@ -18,7 +18,7 @@
     "build": "parcel build --target main",
     "dev": "npm run build && parcel --target example --open --port 5173",
     "prepare": "npm run build",
-    "test": "echo TODO"
+    "test": "node --test"
   },
   "repository": {
     "type": "git",

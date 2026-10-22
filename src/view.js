@@ -8,6 +8,9 @@ import {
   listenForZapReceipt,
 } from "./nostr";
 import { getCachedLightningUri, cacheLightningUri } from "./cache";
+import { hasNwcConnection, payWithNwc, setNwcConnection } from "./nwc";
+
+export { setNwcConnection };
 
 let shadow = null;
 
@@ -413,16 +416,32 @@ const renderAmountDialog = async ({
         openWalletButton.focus();
       };
 
+      const onPaid = () => {
+        amountDialog.close();
+        if (usedAnonymousFallback) {
+          const noticeDialog = renderAnonymousFallbackNoticeDialog();
+          noticeDialog.showModal();
+          noticeDialog.querySelector(".cta-button").focus();
+        }
+      };
+
+      // A wallet the host app connected over NWC comes first, then a WebLN
+      // extension. If either fails, the user can still pay the invoice by QR.
+      if (hasNwcConnection()) {
+        try {
+          await payWithNwc(invoice);
+          onPaid();
+          return;
+        } catch (e) {
+          console.warn("nostr-zap: NWC payment failed", e);
+        }
+      }
+
       if (window.webln) {
         try {
           await window.webln.enable();
           await window.webln.sendPayment(invoice);
-          amountDialog.close();
-          if (usedAnonymousFallback) {
-            const noticeDialog = renderAnonymousFallbackNoticeDialog();
-            noticeDialog.showModal();
-            noticeDialog.querySelector(".cta-button").focus();
-          }
+          onPaid();
         } catch (e) {
           showInvoiceDialog();
         }

@@ -29,6 +29,19 @@ Add this script tag right before the bottom closing body tag. Pin a specific ver
 ></script>
 ```
 
+## Pay with Nostr Wallet Connect (NWC)
+
+If your app already has the user's [NWC](https://github.com/nostr-protocol/nips/blob/master/47.md) connection, hand it to nostr-zap and zaps are paid from that wallet directly, without a QR code. If the NWC payment fails, nostr-zap falls back to WebLN and then to the invoice dialog, as before.
+
+```js
+window.nostrZap.setNwcConnection("nostr+walletconnect://...");
+// or, when bundling: import { setNwcConnection } from "nostr-zap/src/view";
+
+window.nostrZap.setNwcConnection(null); // stop using it
+```
+
+The connection string can spend from the user's wallet. nostr-zap keeps it in memory only and never reads it from the page, so do not put it in a `data-` attribute. Your app decides where to store it.
+
 Example Sandbox with 1 button: https://codesandbox.io/s/nostr-zap-from-anywhere-poc-wiyzgm
 
 Example Sandbox with multiple buttons: https://codesandbox.io/s/nostr-zap-from-anywhere-multiple-buttons-6qp79r

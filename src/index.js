@@ -1,4 +1,10 @@
-import { injectCSS, init, initTargets, initTarget } from "./view";
+import {
+  injectCSS,
+  init,
+  initTargets,
+  initTarget,
+  setNwcConnection,
+} from "./view";
 
 // Wait for <body> before mounting the shadow host. Scripts loaded from a CDN
 // in <head> (common with unpkg/jsdelivr) otherwise crash with:
@@ -14,4 +20,4 @@ if (document.readyState === "loading") {
   boot();
 }
 
-window.nostrZap = { init, initTarget, initTargets };
+window.nostrZap = { init, initTarget, initTargets, setNwcConnection };
