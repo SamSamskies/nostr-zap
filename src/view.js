@@ -166,6 +166,7 @@ const renderInvoiceDialog = ({
     { label: "Bitcoin Beach", value: "bitcoinbeach://" },
     { label: "Blixt", value: "blixtwallet:lightning:" },
     { label: "River", value: "river://" },
+    { label: "BuhoGO", value: "buhogo:lightning:" },
   ];
   const invoiceDialog = renderDialog(`
         <button class="close-button">X</button>
